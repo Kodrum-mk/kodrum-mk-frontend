@@ -59,12 +59,19 @@ const defaultEventPalette = [
 ];
 
 function getEventColor(session: PrepSession, index: number) {
-  return eventColors[session.id] ?? defaultEventPalette[index % defaultEventPalette.length];
+  return (
+    eventColors[session.id] ??
+    defaultEventPalette[index % defaultEventPalette.length]
+  );
 }
 
-function getEventsForWeek(weekDays: (number | null)[], sessions: PrepSession[]) {
+function getEventsForWeek(
+  weekDays: (number | null)[],
+  sessions: PrepSession[],
+) {
   const seen = new Set<string>();
-  const result: { session: PrepSession; startCol: number; endCol: number }[] = [];
+  const result: { session: PrepSession; startCol: number; endCol: number }[] =
+    [];
 
   weekDays.forEach((day) => {
     if (!day) return;
@@ -89,7 +96,9 @@ export function PripremiClient() {
   const [sessions, setSessions] = useState<PrepSession[]>(fallbackPrepSessions);
   const [query, setQuery] = useState("");
   const [activeFilter, setActiveFilter] = useState("Сите Припреми");
-  const [selectedEvent, setSelectedEvent] = useState<PrepSession | null>(fallbackPrepSessions[0] ?? null);
+  const [selectedEvent, setSelectedEvent] = useState<PrepSession | null>(
+    fallbackPrepSessions[0] ?? null,
+  );
   const [isLoading, setIsLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isFallbackData, setIsFallbackData] = useState(false);
@@ -138,7 +147,10 @@ export function PripremiClient() {
   });
 
   useEffect(() => {
-    if (!selectedEvent || !filtered.some((session) => session.id === selectedEvent.id)) {
+    if (
+      !selectedEvent ||
+      !filtered.some((session) => session.id === selectedEvent.id)
+    ) {
       setSelectedEvent(filtered[0] ?? null);
     }
   }, [filtered, selectedEvent]);
@@ -161,7 +173,11 @@ export function PripremiClient() {
               className="w-full pl-10 pr-4 py-3 rounded-lg border border-[#1E424A]/20 text-[#1E424A] placeholder:text-[#1E424A]/40 focus:outline-none focus:border-[#008081] focus:ring-2 focus:ring-[#008081]/20 transition-all bg-white text-sm"
             />
           </div>
-          <div className="flex flex-wrap gap-2" role="group" aria-label="Filter prep sessions">
+          <div
+            className="flex flex-wrap gap-2"
+            role="group"
+            aria-label="Filter prep sessions"
+          >
             {filters.map((f) => (
               <button
                 key={f}
@@ -171,7 +187,7 @@ export function PripremiClient() {
                   "px-4 py-2 rounded-lg font-medium transition-colors text-sm",
                   activeFilter === f
                     ? "bg-[#008081] text-white shadow-md"
-                    : "bg-white text-[#1E424A] border border-[#1E424A]/20 hover:border-[#008081]"
+                    : "bg-white text-[#1E424A] border border-[#1E424A]/20 hover:border-[#008081]",
                 )}
               >
                 {f}
@@ -185,7 +201,9 @@ export function PripremiClient() {
       <div className="py-12 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto">
           {isLoading && (
-            <p className="text-center text-[#1E424A]/60 py-3">Се вчитуваат припремите...</p>
+            <p className="text-center text-[#1E424A]/60 py-3">
+              Се вчитуваат припремите...
+            </p>
           )}
           {errorMessage && (
             <div className="mb-4 rounded-lg border border-[#FACC0B]/50 bg-[#FACC0B]/15 px-4 py-3 text-sm text-[#1E424A]">
@@ -221,13 +239,31 @@ export function PripremiClient() {
                   </p>
                   <div className="space-y-2 mb-5 pb-5 border-b border-[#1E424A]/10 flex-grow">
                     {[
-                      { Icon: User, label: "Инструктор", value: session.instructor },
-                      { Icon: CalendarIcon, label: "Почнува", value: session.startDate },
+                      {
+                        Icon: User,
+                        label: "Инструктор",
+                        value: session.instructor,
+                      },
+                      {
+                        Icon: CalendarIcon,
+                        label: "Почнува",
+                        value: session.startDate,
+                      },
                       { Icon: Clock, label: "Траење", value: session.duration },
-                      { Icon: GraduationCap, label: "Ниво", value: session.level },
+                      {
+                        Icon: GraduationCap,
+                        label: "Ниво",
+                        value: session.level,
+                      },
                     ].map(({ Icon, label, value }) => (
-                      <div key={label} className="flex items-center gap-2 text-sm text-[#1E424A]/80">
-                        <Icon className="w-4 h-4 text-[#008081] flex-shrink-0" aria-hidden="true" />
+                      <div
+                        key={label}
+                        className="flex items-center gap-2 text-sm text-[#1E424A]/80"
+                      >
+                        <Icon
+                          className="w-4 h-4 text-[#008081] flex-shrink-0"
+                          aria-hidden="true"
+                        />
                         <span className="font-medium">{label}:</span>
                         <span className="truncate">{value}</span>
                       </div>
@@ -259,12 +295,20 @@ export function PripremiClient() {
             {/* Calendar */}
             <div className="bg-white border-2 border-[#1E424A]/10 rounded-2xl p-6 shadow-lg">
               <div className="flex items-center justify-between mb-6">
-                <h3 className="text-2xl font-bold text-[#1E424A]">{MONTH_NAME}</h3>
+                <h3 className="text-2xl font-bold text-[#1E424A]">
+                  {MONTH_NAME}
+                </h3>
                 <div className="flex gap-2">
-                  <button className="p-2 rounded-lg border border-[#1E424A]/20 hover:bg-[#008081]/10 transition-colors" aria-label="Previous month">
+                  <button
+                    className="p-2 rounded-lg border border-[#1E424A]/20 hover:bg-[#008081]/10 transition-colors"
+                    aria-label="Previous month"
+                  >
                     <ChevronLeft className="w-5 h-5 text-[#1E424A]" />
                   </button>
-                  <button className="p-2 rounded-lg border border-[#1E424A]/20 hover:bg-[#008081]/10 transition-colors" aria-label="Next month">
+                  <button
+                    className="p-2 rounded-lg border border-[#1E424A]/20 hover:bg-[#008081]/10 transition-colors"
+                    aria-label="Next month"
+                  >
                     <ChevronRight className="w-5 h-5 text-[#1E424A]" />
                   </button>
                 </div>
@@ -273,11 +317,16 @@ export function PripremiClient() {
               <div className="space-y-1">
                 {/* Day headers */}
                 <div className="grid grid-cols-7 gap-1 mb-2">
-                  {["Нед", "Пон", "Вто", "Сре", "Чет", "Пет", "Саб"].map((d) => (
-                    <div key={d} className="text-center text-xs font-semibold text-[#1E424A]/60 py-2">
-                      {d}
-                    </div>
-                  ))}
+                  {["Нед", "Пон", "Вто", "Сре", "Чет", "Пет", "Саб"].map(
+                    (d) => (
+                      <div
+                        key={d}
+                        className="text-center text-xs font-semibold text-[#1E424A]/60 py-2"
+                      >
+                        {d}
+                      </div>
+                    ),
+                  )}
                 </div>
 
                 {/* Weeks */}
@@ -285,7 +334,10 @@ export function PripremiClient() {
                   const weekEvents = getEventsForWeek(week, sessions);
                   return (
                     <div key={wi} className="relative mb-1">
-                      <div className="grid grid-cols-7 gap-1" style={{ minHeight: 100 }}>
+                      <div
+                        className="grid grid-cols-7 gap-1"
+                        style={{ minHeight: 100 }}
+                      >
                         {week.map((day, di) => (
                           <div
                             key={di}
@@ -293,7 +345,7 @@ export function PripremiClient() {
                               "relative rounded-lg border min-h-[100px]",
                               !day
                                 ? "bg-transparent border-transparent"
-                                : "bg-white border-[#1E424A]/10"
+                                : "bg-white border-[#1E424A]/10",
                             )}
                           >
                             {day && (
@@ -361,16 +413,39 @@ export function PripremiClient() {
                   </p>
                   <div className="space-y-3 py-4 border-t border-b border-[#1E424A]/10">
                     {[
-                      { Icon: CalendarIcon, label: "Датум", value: selectedEvent.dateRange },
-                      { Icon: Clock, label: "Траење", value: selectedEvent.duration },
-                      { Icon: User, label: "Инструктор", value: selectedEvent.instructor },
-                      { Icon: GraduationCap, label: "Формат", value: selectedEvent.format },
+                      {
+                        Icon: CalendarIcon,
+                        label: "Датум",
+                        value: selectedEvent.dateRange,
+                      },
+                      {
+                        Icon: Clock,
+                        label: "Траење",
+                        value: selectedEvent.duration,
+                      },
+                      {
+                        Icon: User,
+                        label: "Инструктор",
+                        value: selectedEvent.instructor,
+                      },
+                      {
+                        Icon: GraduationCap,
+                        label: "Формат",
+                        value: selectedEvent.format,
+                      },
                     ].map(({ Icon, label, value }) => (
                       <div key={label} className="flex items-start gap-3">
-                        <Icon className="w-5 h-5 text-[#008081] flex-shrink-0 mt-0.5" aria-hidden="true" />
+                        <Icon
+                          className="w-5 h-5 text-[#008081] flex-shrink-0 mt-0.5"
+                          aria-hidden="true"
+                        />
                         <div>
-                          <p className="text-xs font-medium text-[#1E424A]/60 mb-0.5">{label}</p>
-                          <p className="text-sm font-semibold text-[#1E424A]">{value}</p>
+                          <p className="text-xs font-medium text-[#1E424A]/60 mb-0.5">
+                            {label}
+                          </p>
+                          <p className="text-sm font-semibold text-[#1E424A]">
+                            {value}
+                          </p>
                         </div>
                       </div>
                     ))}

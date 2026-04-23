@@ -78,7 +78,7 @@ export function Navbar() {
       <div
         className={cn(
           "md:hidden border-t border-[#1E424A]/10 bg-white overflow-hidden transition-all duration-200",
-          mobileOpen ? "max-h-96 py-4" : "max-h-0"
+          mobileOpen ? "max-h-96 py-4" : "max-h-0",
         )}
       >
         <div className="max-w-7xl mx-auto px-4 flex flex-col gap-1">

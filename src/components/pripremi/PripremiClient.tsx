@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   Search,
   Calendar as CalendarIcon,
@@ -10,7 +10,8 @@ import {
   ChevronLeft,
   ChevronRight,
 } from "lucide-react";
-import { prepSessions, eventColors } from "@/data/prepSessions";
+import { eventColors, fallbackPrepSessions } from "@/data/prepSessions";
+import { loadPrepSessions } from "@/data/prepSessionsApi";
 import type { PrepSession } from "@/types";
 import { cn } from "@/utils/cn";
 
@@ -48,13 +49,26 @@ function buildCalendarWeeks(): (number | null)[][] {
 
 const calendarWeeks = buildCalendarWeeks();
 
-function getEventsForWeek(weekDays: (number | null)[]) {
+const defaultEventPalette = [
+  { bg: "rgba(0, 128, 129, 0.15)", text: "#008081" },
+  { bg: "rgba(99, 102, 241, 0.15)", text: "#6366F1" },
+  { bg: "rgba(34, 197, 94, 0.15)", text: "#22C55E" },
+  { bg: "rgba(59, 130, 246, 0.15)", text: "#3B82F6" },
+  { bg: "rgba(251, 146, 60, 0.15)", text: "#FB923C" },
+  { bg: "rgba(168, 85, 247, 0.15)", text: "#A855F7" },
+];
+
+function getEventColor(session: PrepSession, index: number) {
+  return eventColors[session.id] ?? defaultEventPalette[index % defaultEventPalette.length];
+}
+
+function getEventsForWeek(weekDays: (number | null)[], sessions: PrepSession[]) {
   const seen = new Set<string>();
   const result: { session: PrepSession; startCol: number; endCol: number }[] = [];
 
   weekDays.forEach((day) => {
     if (!day) return;
-    prepSessions.forEach((session) => {
+    sessions.forEach((session) => {
       if (!session.calendarDates.includes(day) || seen.has(session.id)) return;
       seen.add(session.id);
       const startDay = Math.min(...session.calendarDates);
@@ -72,15 +86,49 @@ function getEventsForWeek(weekDays: (number | null)[]) {
 }
 
 export function PripremiClient() {
+  const [sessions, setSessions] = useState<PrepSession[]>(fallbackPrepSessions);
   const [query, setQuery] = useState("");
   const [activeFilter, setActiveFilter] = useState("Сите Припреми");
-  const [selectedEvent, setSelectedEvent] = useState<PrepSession | null>(
-    prepSessions[0]
-  );
+  const [selectedEvent, setSelectedEvent] = useState<PrepSession | null>(fallbackPrepSessions[0] ?? null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [isFallbackData, setIsFallbackData] = useState(false);
 
-  const filters = ["Сите Припреми", "ФИНКИ", "ФЕИТ", "МФС"];
+  useEffect(() => {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 8000);
 
-  const filtered = prepSessions.filter((s) => {
+    const run = async () => {
+      setIsLoading(true);
+      const result = await loadPrepSessions(controller.signal);
+      if (controller.signal.aborted) return;
+
+      setSessions(result.sessions);
+      setErrorMessage(result.errorMessage ?? null);
+      setIsFallbackData(result.source === "fallback");
+      setIsLoading(false);
+    };
+
+    void run();
+
+    return () => {
+      clearTimeout(timeoutId);
+      controller.abort();
+    };
+  }, []);
+
+  const filters = useMemo(() => {
+    const facultySet = new Set(sessions.map((session) => session.faculty));
+    return ["Сите Припреми", ...Array.from(facultySet)];
+  }, [sessions]);
+
+  useEffect(() => {
+    if (!filters.includes(activeFilter)) {
+      setActiveFilter("Сите Припреми");
+    }
+  }, [activeFilter, filters]);
+
+  const filtered = sessions.filter((s) => {
     const matchesQuery =
       s.title.toLowerCase().includes(query.toLowerCase()) ||
       s.faculty.toLowerCase().includes(query.toLowerCase());
@@ -88,6 +136,12 @@ export function PripremiClient() {
       activeFilter === "Сите Припреми" || s.faculty === activeFilter;
     return matchesQuery && matchesFilter;
   });
+
+  useEffect(() => {
+    if (!selectedEvent || !filtered.some((session) => session.id === selectedEvent.id)) {
+      setSelectedEvent(filtered[0] ?? null);
+    }
+  }, [filtered, selectedEvent]);
 
   return (
     <>
@@ -130,6 +184,16 @@ export function PripremiClient() {
       {/* Session cards grid */}
       <div className="py-12 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto">
+          {isLoading && (
+            <p className="text-center text-[#1E424A]/60 py-3">Се вчитуваат припремите...</p>
+          )}
+          {errorMessage && (
+            <div className="mb-4 rounded-lg border border-[#FACC0B]/50 bg-[#FACC0B]/15 px-4 py-3 text-sm text-[#1E424A]">
+              {errorMessage}
+              {isFallbackData && " "}
+              {isFallbackData && "Користиме резервни локални податоци."}
+            </div>
+          )}
           {filtered.length === 0 ? (
             <p className="text-center text-[#1E424A]/60 py-12">
               Нема пронајдени припреми.
@@ -218,7 +282,7 @@ export function PripremiClient() {
 
                 {/* Weeks */}
                 {calendarWeeks.map((week, wi) => {
-                  const weekEvents = getEventsForWeek(week);
+                  const weekEvents = getEventsForWeek(week, sessions);
                   return (
                     <div key={wi} className="relative mb-1">
                       <div className="grid grid-cols-7 gap-1" style={{ minHeight: 100 }}>
@@ -245,7 +309,7 @@ export function PripremiClient() {
                       {weekEvents.length > 0 && (
                         <div className="absolute inset-0 pointer-events-none">
                           {weekEvents.map((ev, ei) => {
-                            const color = eventColors[ev.session.id];
+                            const color = getEventColor(ev.session, ei);
                             return (
                               <button
                                 key={ev.session.id}

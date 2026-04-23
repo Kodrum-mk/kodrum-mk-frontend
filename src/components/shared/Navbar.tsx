@@ -31,8 +31,7 @@ export function Navbar() {
               alt="Кодрум"
               width={120}
               height={40}
-              className="h-10 w-auto"
-              priority
+              className="w-[120px] h-auto"
             />
           </Link>
 

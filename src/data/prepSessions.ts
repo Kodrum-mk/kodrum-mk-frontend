@@ -1,5 +1,6 @@
 import type { PrepSession } from "@/types";
 
+// Legacy mock data kept as a read-only fallback when Strapi is unavailable.
 export const prepSessions: PrepSession[] = [
   {
     id: "1",
@@ -96,3 +97,5 @@ export const eventColors: Record<string, { bg: string; text: string }> = {
   "5": { bg: "rgba(251, 146, 60, 0.15)", text: "#FB923C" },
   "6": { bg: "rgba(168, 85, 247, 0.15)", text: "#A855F7" },
 };
+
+export const fallbackPrepSessions = prepSessions;

@@ -5,8 +5,7 @@ const BASE_URL = "https://kodrum.mk";
 export default function sitemap(): MetadataRoute.Sitemap {
   const routes = [
     "",
-    "/kursevi",
-    "/pripremi",
+"/pripremi",
     "/promo-paketi",
     "/kontakt",
     "/help",

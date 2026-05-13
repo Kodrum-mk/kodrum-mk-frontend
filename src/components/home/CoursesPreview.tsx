@@ -71,13 +71,15 @@ export function CoursesPreview() {
             Истражувајте ги нашите курсеви по факултет и погледнете кои предмети
             се моментално достапни за подготовка.
           </p>
-          <Link
-            href="/kursevi"
+          <a
+            href="https://courses.kodrum.dev"
+            target="_blank"
+            rel="noopener noreferrer"
             className="bg-[#008081] hover:bg-[#006566] text-white font-medium py-3 px-8 rounded-lg transition-colors shadow-md inline-flex items-center gap-2 text-sm"
           >
             Види ги сите
             <ChevronRight className="w-5 h-5" aria-hidden="true" />
-          </Link>
+          </a>
         </div>
       </div>
 

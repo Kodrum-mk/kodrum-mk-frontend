@@ -8,8 +8,8 @@ export const metadata: Metadata = {
 };
 
 const contactInfo = [
-  { Icon: Mail, label: "Email", value: "info@kodrum.mk", href: "mailto:info@kodrum.mk" },
-  { Icon: Phone, label: "Телефон", value: "+389 XX XXX XXX", href: "tel:+389XXXXXXXX" },
+  { Icon: Mail, label: "Email", value: "kodrum.mk@gmail.com", href: "mailto:kodrum.mk@gmail.com" },
+  { Icon: Phone, label: "Телефон", value: "+389 75 295 582", href: "tel:+38975295582" },
   { Icon: MapPin, label: "Локација", value: "Скопје, Македонија", href: null },
 ];
 

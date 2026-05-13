@@ -3,7 +3,7 @@ import { Facebook, Instagram, Linkedin, Mail } from "lucide-react";
 
 const navLinks = [
   { label: "Почетна", href: "/" },
-  { label: "Курсеви", href: "/kursevi" },
+  { label: "Курсеви", href: "https://courses.kodrum.dev" },
   { label: "Припреми", href: "/pripremi" },
   { label: "Промо пакети", href: "/promo-paketi" },
   { label: "Контакт", href: "/kontakt" },
@@ -36,16 +36,30 @@ export function Footer() {
               Навигација
             </h4>
             <ul className="space-y-2.5">
-              {navLinks.map((link) => (
-                <li key={link.href}>
-                  <Link
-                    href={link.href}
-                    className="text-white/70 hover:text-[#008081] transition-colors text-sm"
-                  >
-                    {link.label}
-                  </Link>
-                </li>
-              ))}
+              {navLinks.map((link) => {
+                const isExternal = link.href.startsWith("http");
+                return (
+                  <li key={link.href}>
+                    {isExternal ? (
+                      <a
+                        href={link.href}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-white/70 hover:text-[#008081] transition-colors text-sm"
+                      >
+                        {link.label}
+                      </a>
+                    ) : (
+                      <Link
+                        href={link.href}
+                        className="text-white/70 hover:text-[#008081] transition-colors text-sm"
+                      >
+                        {link.label}
+                      </Link>
+                    )}
+                  </li>
+                );
+              })}
             </ul>
           </div>
 

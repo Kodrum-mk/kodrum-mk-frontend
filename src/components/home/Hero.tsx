@@ -14,7 +14,7 @@ const heroCards = [
   },
   {
     title: "Онлајн курсеви",
-    href: "/kursevi",
+    href: "https://courses.kodrum.dev",
     cta: "Види ги Курсевите",
     points: [
       "Видео материјали и задачи достапни во секое време",
@@ -92,12 +92,23 @@ export function Hero() {
                     </li>
                   ))}
                 </ul>
-                <Link
-                  href={card.href}
-                  className="w-full bg-[#008081] hover:bg-[#006566] text-white font-medium py-3.5 px-6 rounded-lg transition-colors shadow-md block text-center text-sm"
-                >
-                  {card.cta}
-                </Link>
+                {card.href.startsWith("http") ? (
+                  <a
+                    href={card.href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="w-full bg-[#008081] hover:bg-[#006566] text-white font-medium py-3.5 px-6 rounded-lg transition-colors shadow-md block text-center text-sm"
+                  >
+                    {card.cta}
+                  </a>
+                ) : (
+                  <Link
+                    href={card.href}
+                    className="w-full bg-[#008081] hover:bg-[#006566] text-white font-medium py-3.5 px-6 rounded-lg transition-colors shadow-md block text-center text-sm"
+                  >
+                    {card.cta}
+                  </Link>
+                )}
               </div>
             ))}
           </div>

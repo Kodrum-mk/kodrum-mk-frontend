@@ -8,7 +8,7 @@ import { cn } from "@/utils/cn";
 
 const navLinks = [
   { label: "Почетна", href: "/" },
-  { label: "Курсеви", href: "/kursevi" },
+  { label: "Курсеви", href: "https://courses.kodrum.dev" },
   { label: "Припреми", href: "/pripremi" },
   { label: "Промо пакети", href: "/promo-paketi" },
   { label: "Контакт", href: "/kontakt" },
@@ -37,21 +37,34 @@ export function Navbar() {
 
           {/* Desktop nav */}
           <div className="hidden md:flex items-center gap-8">
-            {navLinks.map((link) => (
-              <Link
-                key={link.href}
-                href={link.href}
-                className="text-[#1E424A] hover:text-[#008081] transition-colors font-medium text-sm"
-              >
-                {link.label}
-              </Link>
-            ))}
+            {navLinks.map((link) => {
+              const isExternal = link.href.startsWith("http");
+              return isExternal ? (
+                <a
+                  key={link.href}
+                  href={link.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-[#1E424A] hover:text-[#008081] transition-colors font-medium text-sm"
+                >
+                  {link.label}
+                </a>
+              ) : (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  className="text-[#1E424A] hover:text-[#008081] transition-colors font-medium text-sm"
+                >
+                  {link.label}
+                </Link>
+              );
+            })}
           </div>
 
           {/* CTA + mobile toggle */}
           <div className="flex items-center gap-3">
             <a
-              href="https://discord.gg/kodrum"
+              href="https://discord.gg/FmMjw3Q564"
               target="_blank"
               rel="noopener noreferrer"
               className="hidden sm:inline-flex bg-[#008081] hover:bg-[#006566] text-white font-medium py-2 px-5 rounded-lg transition-colors text-sm"
@@ -82,18 +95,32 @@ export function Navbar() {
         )}
       >
         <div className="max-w-7xl mx-auto px-4 flex flex-col gap-1">
-          {navLinks.map((link) => (
-            <Link
-              key={link.href}
-              href={link.href}
-              onClick={() => setMobileOpen(false)}
-              className="px-3 py-2.5 rounded-lg text-[#1E424A] hover:bg-[#F2F0E7] hover:text-[#008081] transition-colors font-medium text-sm"
-            >
-              {link.label}
-            </Link>
-          ))}
+          {navLinks.map((link) => {
+              const isExternal = link.href.startsWith("http");
+              return isExternal ? (
+                <a
+                  key={link.href}
+                  href={link.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  onClick={() => setMobileOpen(false)}
+                  className="px-3 py-2.5 rounded-lg text-[#1E424A] hover:bg-[#F2F0E7] hover:text-[#008081] transition-colors font-medium text-sm"
+                >
+                  {link.label}
+                </a>
+              ) : (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  onClick={() => setMobileOpen(false)}
+                  className="px-3 py-2.5 rounded-lg text-[#1E424A] hover:bg-[#F2F0E7] hover:text-[#008081] transition-colors font-medium text-sm"
+                >
+                  {link.label}
+                </Link>
+              );
+            })}
           <a
-            href="https://discord.gg/kodrum"
+            href="https://discord.gg/FmMjw3Q564"
             target="_blank"
             rel="noopener noreferrer"
             className="mt-2 text-center bg-[#008081] hover:bg-[#006566] text-white font-medium py-2.5 px-5 rounded-lg transition-colors text-sm"

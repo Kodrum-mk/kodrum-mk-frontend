@@ -1,7 +1,7 @@
 import type { PrepSession } from "@/types";
 import { fallbackPrepSessions } from "@/data/prepSessions";
 
-const STRAPI_BASE_URL = "http://localhost:1337/api";
+const STRAPI_BASE_URL = `${process.env.NEXT_PUBLIC_STRAPI_URL ?? "http://localhost:1337"}/api`;
 const PREP_SOURCE = process.env.NEXT_PUBLIC_PREP_DATA_SOURCE ?? "strapi";
 
 // populate[faculty]=* causes 400 in Strapi 5 due to circular back-relation on faculty.prepSessions

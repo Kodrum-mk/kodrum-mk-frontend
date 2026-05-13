@@ -161,8 +161,8 @@ function mapFormat(format?: string): string {
 }
 
 function normalizePrepSession(entity: StrapiEntity): PrepSession | null {
-  const relationFaculty = getRelationEntity(entity.faculty);
-  const relationInstructor = getRelationEntity(entity.instructor);
+  const relationFaculty = getRelationEntity(entity.faculty ?? null);
+  const relationInstructor = getRelationEntity(entity.instructor ?? null);
 
   const title = getEntityField<string>(entity, "title")?.trim();
   const description = getEntityField<string>(entity, "description")?.trim();

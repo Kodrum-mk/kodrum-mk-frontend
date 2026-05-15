@@ -27,6 +27,7 @@ type StrapiEntity = {
   duration?: string;
   level?: string;
   status?: string;
+  registrationStatus?: string;
   format?: string;
   calendarDates?: unknown;
   faculty?: StrapiRelation;
@@ -198,7 +199,10 @@ function normalizePrepSession(entity: StrapiEntity): PrepSession | null {
     dateRange: dateRangeStored || deriveDateRange(startDateIso, endDateIso) || startDateLabel,
     duration,
     level: mapLevel(getEntityField<string>(entity, "level")),
-    status: mapStatus(getEntityField<string>(entity, "status")),
+    status: mapStatus(
+      getEntityField<string>(entity, "status")
+        ?? getEntityField<string>(entity, "registrationStatus"),
+    ),
     format: mapFormat(getEntityField<string>(entity, "format")),
     calendarDates: calendarDates.length > 0
       ? calendarDates

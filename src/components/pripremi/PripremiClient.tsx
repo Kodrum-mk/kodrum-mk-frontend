@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import {
   Search,
@@ -18,6 +19,8 @@ import { cn } from "@/utils/cn";
 const MONTH_NAME = "Март 2026";
 const MONTH = 2; // March (0-indexed)
 const YEAR = 2026;
+const PREP_REGISTRATION_URL =
+  "https://docs.google.com/forms/d/e/1FAIpQLScxb4pyK4RWKZ3HyDqeyJkUacK7od1odn5UPO3tKNbLYCjagQ/viewform?usp=send_form";
 
 function getDaysInMonth(month: number, year: number) {
   return new Date(year, month + 1, 0).getDate();
@@ -269,9 +272,14 @@ export function PripremiClient() {
                       </div>
                     ))}
                   </div>
-                  <button className="w-full bg-[#008081] hover:bg-[#006566] text-white font-medium py-3 px-6 rounded-lg transition-colors shadow-md mt-auto text-sm">
+                  <Link
+                    href={PREP_REGISTRATION_URL}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="w-full bg-[#008081] hover:bg-[#006566] text-white font-medium py-3 px-6 rounded-lg transition-colors shadow-md mt-auto text-sm text-center"
+                  >
                     Пријави се
-                  </button>
+                  </Link>
                 </article>
               ))}
             </div>
@@ -450,9 +458,14 @@ export function PripremiClient() {
                       </div>
                     ))}
                   </div>
-                  <button className="w-full bg-[#008081] hover:bg-[#006566] text-white font-medium py-3 px-6 rounded-lg transition-colors shadow-md text-sm">
+                  <Link
+                    href={PREP_REGISTRATION_URL}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="w-full bg-[#008081] hover:bg-[#006566] text-white font-medium py-3 px-6 rounded-lg transition-colors shadow-md text-sm text-center"
+                  >
                     Пријави се
-                  </button>
+                  </Link>
                 </div>
               ) : (
                 <p className="text-sm text-[#1E424A]/60">

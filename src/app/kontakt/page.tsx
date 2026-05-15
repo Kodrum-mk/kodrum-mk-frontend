@@ -58,8 +58,8 @@ export default function KontaktPage() {
               </p>
               <div className="flex gap-3">
                 {[
-                  { href: "https://facebook.com", Icon: Facebook, label: "Facebook" },
-                  { href: "https://instagram.com", Icon: Instagram, label: "Instagram" },
+                  { href: "https://www.facebook.com/61583240054450/", Icon: Facebook, label: "Facebook" },
+                  { href: "https://www.instagram.com/kodrum.mk/", Icon: Instagram, label: "Instagram" },
                 ].map(({ href, Icon, label }) => (
                   <a
                     key={label}

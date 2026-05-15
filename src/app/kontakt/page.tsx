@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Mail, Phone, MapPin, Facebook, Instagram } from "lucide-react";
+import { ContactForm } from "@/components/kontakt/ContactForm";
 
 export const metadata: Metadata = {
   title: "Контакт",
@@ -75,101 +76,7 @@ export default function KontaktPage() {
             </div>
           </div>
 
-          {/* Right – Contact form */}
-          <div className="bg-[#F2F0E7] rounded-2xl p-8 shadow-lg">
-            <h2 className="text-2xl font-bold text-[#1E424A] mb-6">
-              Испрати порака
-            </h2>
-            <form className="space-y-5" >
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                  <label
-                    htmlFor="ime"
-                    className="block text-sm font-medium text-[#1E424A] mb-1.5"
-                  >
-                    Ime *
-                  </label>
-                  <input
-                    id="ime"
-                    name="ime"
-                    type="text"
-                    required
-                    placeholder="Вашето Ime"
-                    className="w-full px-4 py-3 rounded-lg border border-[#1E424A]/20 bg-white focus:outline-none focus:border-[#008081] focus:ring-2 focus:ring-[#008081]/20 text-[#1E424A] placeholder:text-[#1E424A]/40 transition-all text-sm"
-                  />
-                </div>
-                <div>
-                  <label
-                    htmlFor="prezime"
-                    className="block text-sm font-medium text-[#1E424A] mb-1.5"
-                  >
-                    Презиме *
-                  </label>
-                  <input
-                    id="prezime"
-                    name="prezime"
-                    type="text"
-                    required
-                    placeholder="Вашето презиме"
-                    className="w-full px-4 py-3 rounded-lg border border-[#1E424A]/20 bg-white focus:outline-none focus:border-[#008081] focus:ring-2 focus:ring-[#008081]/20 text-[#1E424A] placeholder:text-[#1E424A]/40 transition-all text-sm"
-                  />
-                </div>
-              </div>
-              <div>
-                <label
-                  htmlFor="email"
-                  className="block text-sm font-medium text-[#1E424A] mb-1.5"
-                >
-                  Email *
-                </label>
-                <input
-                  id="email"
-                  name="email"
-                  type="email"
-                  required
-                  placeholder="vas@email.com"
-                  className="w-full px-4 py-3 rounded-lg border border-[#1E424A]/20 bg-white focus:outline-none focus:border-[#008081] focus:ring-2 focus:ring-[#008081]/20 text-[#1E424A] placeholder:text-[#1E424A]/40 transition-all text-sm"
-                />
-              </div>
-              <div>
-                <label
-                  htmlFor="predmet"
-                  className="block text-sm font-medium text-[#1E424A] mb-1.5"
-                >
-                  Предмет / Тема
-                </label>
-                <input
-                  id="predmet"
-                  name="predmet"
-                  type="text"
-                  placeholder="Тема на вашата порака"
-                  className="w-full px-4 py-3 rounded-lg border border-[#1E424A]/20 bg-white focus:outline-none focus:border-[#008081] focus:ring-2 focus:ring-[#008081]/20 text-[#1E424A] placeholder:text-[#1E424A]/40 transition-all text-sm"
-                />
-              </div>
-              <div>
-                <label
-                  htmlFor="poraka"
-                  className="block text-sm font-medium text-[#1E424A] mb-1.5"
-                >
-                  Порака *
-                </label>
-                <textarea
-                  id="poraka"
-                  name="poraka"
-                  required
-                  rows={5}
-                  placeholder="Напиши ја вашата порака тука..."
-                  className="w-full px-4 py-3 rounded-lg border border-[#1E424A]/20 bg-white focus:outline-none focus:border-[#008081] focus:ring-2 focus:ring-[#008081]/20 text-[#1E424A] placeholder:text-[#1E424A]/40 transition-all resize-none text-sm"
-                />
-              </div>
-              <button
-                type="submit"
-                className="w-full bg-[#008081] hover:bg-[#006566] text-white font-medium py-3.5 px-6 rounded-lg transition-colors shadow-md text-sm"
-              >
-                Испрати
-              </button>
-            </form>
-          </div>
+          <ContactForm />
         </div>
       </div>
     </div>

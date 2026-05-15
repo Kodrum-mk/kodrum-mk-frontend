@@ -29,6 +29,7 @@ type StrapiEntity = {
   status?: string;
   registrationStatus?: string;
   format?: string;
+  registrationUrl?: string;
   calendarDates?: unknown;
   faculty?: StrapiRelation;
   instructor?: StrapiRelation;
@@ -168,6 +169,7 @@ function normalizePrepSession(entity: StrapiEntity): PrepSession | null {
   const title = getEntityField<string>(entity, "title")?.trim();
   const description = getEntityField<string>(entity, "description")?.trim();
   const duration = getEntityField<string>(entity, "duration")?.trim();
+  const registrationUrl = getEntityField<string>(entity, "registrationUrl")?.trim();
 
   if (!title || !description || !duration) return null;
 
@@ -204,6 +206,9 @@ function normalizePrepSession(entity: StrapiEntity): PrepSession | null {
         ?? getEntityField<string>(entity, "registrationStatus"),
     ),
     format: mapFormat(getEntityField<string>(entity, "format")),
+    registrationUrl:
+      registrationUrl
+      || "https://docs.google.com/forms/d/e/1FAIpQLScxb4pyK4RWKZ3HyDqeyJkUacK7od1odn5UPO3tKNbLYCjagQ/viewform?usp=send_form",
     calendarDates: calendarDates.length > 0
       ? calendarDates
       : deriveCalendarDates(startDateIso, endDateIso),

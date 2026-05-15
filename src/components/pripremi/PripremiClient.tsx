@@ -19,8 +19,6 @@ import { cn } from "@/utils/cn";
 const MONTH_NAME = "Март 2026";
 const MONTH = 2; // March (0-indexed)
 const YEAR = 2026;
-const PREP_REGISTRATION_URL =
-  "https://docs.google.com/forms/d/e/1FAIpQLScxb4pyK4RWKZ3HyDqeyJkUacK7od1odn5UPO3tKNbLYCjagQ/viewform?usp=send_form";
 
 function getDaysInMonth(month: number, year: number) {
   return new Date(year, month + 1, 0).getDate();
@@ -222,8 +220,11 @@ export function PripremiClient() {
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {filtered.map((session) => (
-                <article
+                <Link
                   key={session.id}
+                  href={session.registrationUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
                   className="bg-white border-2 border-[#1E424A]/10 rounded-2xl p-6 shadow-lg hover:shadow-xl transition-shadow flex flex-col h-[480px]"
                 >
                   <div className="flex items-center justify-between mb-4">
@@ -272,15 +273,10 @@ export function PripremiClient() {
                       </div>
                     ))}
                   </div>
-                  <Link
-                    href={PREP_REGISTRATION_URL}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="w-full bg-[#008081] hover:bg-[#006566] text-white font-medium py-3 px-6 rounded-lg transition-colors shadow-md mt-auto text-sm text-center"
-                  >
+                  <div className="w-full bg-[#008081] hover:bg-[#006566] text-white font-medium py-3 px-6 rounded-lg transition-colors shadow-md mt-auto text-sm text-center">
                     Пријави се
-                  </Link>
-                </article>
+                  </div>
+                </Link>
               ))}
             </div>
           )}
@@ -459,7 +455,7 @@ export function PripremiClient() {
                     ))}
                   </div>
                   <Link
-                    href={PREP_REGISTRATION_URL}
+                    href={selectedEvent.registrationUrl}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="w-full bg-[#008081] hover:bg-[#006566] text-white font-medium py-3 px-6 rounded-lg transition-colors shadow-md text-sm text-center"

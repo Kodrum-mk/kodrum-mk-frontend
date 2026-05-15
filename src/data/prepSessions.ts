@@ -16,6 +16,8 @@ export const prepSessions: PrepSession[] = [
     status: "Запишување во тек",
     format: "Хибрид",
     calendarDates: [25, 26, 27],
+    registrationUrl:
+      "https://docs.google.com/forms/d/e/1FAIpQLScxb4pyK4RWKZ3HyDqeyJkUacK7od1odn5UPO3tKNbLYCjagQ/viewform?usp=send_form",
   },
   {
     id: "2",
@@ -30,6 +32,8 @@ export const prepSessions: PrepSession[] = [
     status: "Запишување во тек",
     format: "Во живо",
     calendarDates: [28, 29, 30],
+    registrationUrl:
+      "https://docs.google.com/forms/d/e/1FAIpQLScxb4pyK4RWKZ3HyDqeyJkUacK7od1odn5UPO3tKNbLYCjagQ/viewform?usp=send_form",
   },
   {
     id: "3",
@@ -44,6 +48,8 @@ export const prepSessions: PrepSession[] = [
     status: "Запишување во тек",
     format: "Онлајн",
     calendarDates: [3, 4, 5],
+    registrationUrl:
+      "https://docs.google.com/forms/d/e/1FAIpQLScxb4pyK4RWKZ3HyDqeyJkUacK7od1odn5UPO3tKNbLYCjagQ/viewform?usp=send_form",
   },
   {
     id: "4",
@@ -58,6 +64,8 @@ export const prepSessions: PrepSession[] = [
     status: "Запишување во тек",
     format: "Хибрид",
     calendarDates: [25, 26, 27],
+    registrationUrl:
+      "https://docs.google.com/forms/d/e/1FAIpQLScxb4pyK4RWKZ3HyDqeyJkUacK7od1odn5UPO3tKNbLYCjagQ/viewform?usp=send_form",
   },
   {
     id: "5",
@@ -72,6 +80,8 @@ export const prepSessions: PrepSession[] = [
     status: "Запишување во тек",
     format: "Во живо",
     calendarDates: [3, 4, 5],
+    registrationUrl:
+      "https://docs.google.com/forms/d/e/1FAIpQLScxb4pyK4RWKZ3HyDqeyJkUacK7od1odn5UPO3tKNbLYCjagQ/viewform?usp=send_form",
   },
   {
     id: "6",
@@ -86,6 +96,8 @@ export const prepSessions: PrepSession[] = [
     status: "Запишување во тек",
     format: "Хибрид",
     calendarDates: [28, 29, 30],
+    registrationUrl:
+      "https://docs.google.com/forms/d/e/1FAIpQLScxb4pyK4RWKZ3HyDqeyJkUacK7od1odn5UPO3tKNbLYCjagQ/viewform?usp=send_form",
   },
 ];
 

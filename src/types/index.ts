@@ -26,6 +26,22 @@ export interface PrepSession {
   status: string;
   format: string;
   calendarDates: number[];
+  registrationUrl: string;
+}
+
+export interface PromoPackage {
+  id: string;
+  badge?: string;
+  featured?: boolean;
+  title: string;
+  description: string;
+  originalPrice: string;
+  discount: string;
+  savings: string;
+  courses: string[];
+  includes: string[];
+  noteText?: string;
+  registrationUrl: string;
 }
 
 export interface Testimonial {

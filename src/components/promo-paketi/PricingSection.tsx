@@ -4,7 +4,6 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { Star, Gift, Users, Check, Clock, AlertCircle } from "lucide-react";
 import type { PromoPackage } from "@/types";
-import { fallbackPromoPackages } from "@/data/promoPackages";
 import { loadPromoPackages } from "@/data/promoPackagesApi";
 
 const iconByIndex = [Star, Gift, Users];
@@ -21,18 +20,52 @@ function getNoteIcon(noteText?: string) {
   return Clock;
 }
 
+function PromoCardSkeleton() {
+  return (
+    <div className="bg-white rounded-xl border border-[#1E424A]/10 shadow-md p-8 flex flex-col animate-pulse">
+      <div className="mb-6 h-8 w-28 rounded-lg bg-[#FACC0B]/20" />
+      <div className="mb-6">
+        <div className="w-16 h-16 rounded-full bg-[#008081]/10" />
+      </div>
+      <div className="h-7 w-3/4 rounded bg-[#1E424A]/10 mb-3" />
+      <div className="space-y-2 mb-6">
+        <div className="h-4 w-full rounded bg-[#1E424A]/10" />
+        <div className="h-4 w-5/6 rounded bg-[#1E424A]/10" />
+      </div>
+      <div className="bg-[#F2F0E7] rounded-lg p-5 mb-6">
+        <div className="h-6 w-32 rounded bg-[#1E424A]/10 mb-2" />
+        <div className="h-4 w-28 rounded bg-[#008081]/10" />
+      </div>
+      <div className="space-y-2 mb-6">
+        {[0, 1, 2].map((item) => (
+          <div key={item} className="h-4 w-4/5 rounded bg-[#1E424A]/10" />
+        ))}
+      </div>
+      <div className="space-y-2 mb-6 flex-grow">
+        {[0, 1, 2, 3].map((item) => (
+          <div key={item} className="h-4 w-full rounded bg-[#1E424A]/10" />
+        ))}
+      </div>
+      <div className="h-11 w-full rounded-lg bg-[#008081]/15 mt-auto" />
+    </div>
+  );
+}
+
 export function PricingSection() {
-  const [cards, setCards] = useState<PromoPackage[]>(fallbackPromoPackages);
+  const [cards, setCards] = useState<PromoPackage[]>([]);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const controller = new AbortController();
 
     const run = async () => {
+      setIsLoading(true);
       const result = await loadPromoPackages(controller.signal);
       if (controller.signal.aborted) return;
       setCards(result.packages);
       setErrorMessage(result.errorMessage ?? null);
+      setIsLoading(false);
     };
 
     void run();
@@ -49,7 +82,9 @@ export function PricingSection() {
           </div>
         )}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {cards.map((card, index) => {
+          {isLoading ? Array.from({ length: 3 }).map((_, index) => (
+            <PromoCardSkeleton key={index} />
+          )) : cards.map((card, index) => {
             const Icon = getCardIcon(index, card);
             const NoteIcon = getNoteIcon(card.noteText);
 

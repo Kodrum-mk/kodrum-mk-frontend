@@ -11,7 +11,7 @@ import {
   ChevronLeft,
   ChevronRight,
 } from "lucide-react";
-import { eventColors, fallbackPrepSessions } from "@/data/prepSessions";
+import { eventColors } from "@/data/prepSessions";
 import { loadPrepSessions } from "@/data/prepSessionsApi";
 import type { PrepSession } from "@/types";
 import { cn } from "@/utils/cn";
@@ -19,6 +19,71 @@ import { cn } from "@/utils/cn";
 const MONTH_NAME = "Март 2026";
 const MONTH = 2; // March (0-indexed)
 const YEAR = 2026;
+
+function SessionCardSkeleton() {
+  return (
+    <div className="bg-white border-2 border-[#1E424A]/10 rounded-2xl p-6 shadow-lg h-[480px] animate-pulse">
+      <div className="flex items-center justify-between mb-4">
+        <div className="h-6 w-28 rounded-full bg-[#008081]/10" />
+        <div className="h-6 w-20 rounded bg-[#FACC0B]/20" />
+      </div>
+      <div className="h-7 w-3/4 rounded bg-[#1E424A]/10 mb-3" />
+      <div className="space-y-2 mb-5">
+        <div className="h-4 w-full rounded bg-[#1E424A]/10" />
+        <div className="h-4 w-5/6 rounded bg-[#1E424A]/10" />
+        <div className="h-4 w-2/3 rounded bg-[#1E424A]/10" />
+      </div>
+      <div className="space-y-3 mb-5 pb-5 border-b border-[#1E424A]/10">
+        {[0, 1, 2, 3].map((item) => (
+          <div key={item} className="h-4 w-4/5 rounded bg-[#1E424A]/10" />
+        ))}
+      </div>
+      <div className="h-11 w-full rounded-lg bg-[#008081]/15 mt-auto" />
+    </div>
+  );
+}
+
+function CalendarSkeleton() {
+  return (
+    <div className="grid grid-cols-1 lg:grid-cols-[60%_40%] gap-8">
+      <div className="bg-white border-2 border-[#1E424A]/10 rounded-2xl p-6 shadow-lg animate-pulse">
+        <div className="h-8 w-40 rounded bg-[#1E424A]/10 mb-6" />
+        <div className="grid grid-cols-7 gap-1 mb-2">
+          {Array.from({ length: 7 }).map((_, index) => (
+            <div key={index} className="h-6 rounded bg-[#1E424A]/10" />
+          ))}
+        </div>
+        <div className="space-y-1">
+          {Array.from({ length: 5 }).map((_, row) => (
+            <div key={row} className="grid grid-cols-7 gap-1">
+              {Array.from({ length: 7 }).map((__, col) => (
+                <div
+                  key={`${row}-${col}`}
+                  className="h-[100px] rounded-lg border border-[#1E424A]/10 bg-[#F2F0E7]/30"
+                />
+              ))}
+            </div>
+          ))}
+        </div>
+      </div>
+      <div className="bg-white border-2 border-[#1E424A]/10 rounded-2xl p-6 shadow-lg animate-pulse">
+        <div className="h-7 w-48 rounded bg-[#1E424A]/10 mb-5" />
+        <div className="h-6 w-20 rounded bg-[#FACC0B]/20 mb-4" />
+        <div className="h-8 w-3/4 rounded bg-[#1E424A]/10 mb-4" />
+        <div className="space-y-2 mb-4">
+          <div className="h-4 w-full rounded bg-[#1E424A]/10" />
+          <div className="h-4 w-5/6 rounded bg-[#1E424A]/10" />
+        </div>
+        <div className="space-y-3 py-4 border-t border-b border-[#1E424A]/10 mb-4">
+          {[0, 1, 2, 3].map((item) => (
+            <div key={item} className="h-10 w-full rounded bg-[#1E424A]/10" />
+          ))}
+        </div>
+        <div className="h-11 w-full rounded-lg bg-[#008081]/15" />
+      </div>
+    </div>
+  );
+}
 
 function getDaysInMonth(month: number, year: number) {
   return new Date(year, month + 1, 0).getDate();
@@ -94,12 +159,10 @@ function getEventsForWeek(
 }
 
 export function PripremiClient() {
-  const [sessions, setSessions] = useState<PrepSession[]>(fallbackPrepSessions);
+  const [sessions, setSessions] = useState<PrepSession[]>([]);
   const [query, setQuery] = useState("");
   const [activeFilter, setActiveFilter] = useState("Сите Припреми");
-  const [selectedEvent, setSelectedEvent] = useState<PrepSession | null>(
-    fallbackPrepSessions[0] ?? null,
-  );
+  const [selectedEvent, setSelectedEvent] = useState<PrepSession | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isFallbackData, setIsFallbackData] = useState(false);
@@ -201,11 +264,6 @@ export function PripremiClient() {
       {/* Session cards grid */}
       <div className="py-12 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto">
-          {isLoading && (
-            <p className="text-center text-[#1E424A]/60 py-3">
-              Се вчитуваат припремите...
-            </p>
-          )}
           {errorMessage && (
             <div className="mb-4 rounded-lg border border-[#FACC0B]/50 bg-[#FACC0B]/15 px-4 py-3 text-sm text-[#1E424A]">
               {errorMessage}
@@ -213,7 +271,13 @@ export function PripremiClient() {
               {isFallbackData && "Користиме резервни локални податоци."}
             </div>
           )}
-          {filtered.length === 0 ? (
+          {isLoading ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {Array.from({ length: 6 }).map((_, index) => (
+                <SessionCardSkeleton key={index} />
+              ))}
+            </div>
+          ) : filtered.length === 0 ? (
             <p className="text-center text-[#1E424A]/60 py-12">
               Нема пронајдени припреми.
             </p>
@@ -295,6 +359,9 @@ export function PripremiClient() {
             </p>
           </div>
 
+          {isLoading ? (
+            <CalendarSkeleton />
+          ) : (
           <div className="grid grid-cols-1 lg:grid-cols-[60%_40%] gap-8">
             {/* Calendar */}
             <div className="bg-white border-2 border-[#1E424A]/10 rounded-2xl p-6 shadow-lg">
@@ -470,6 +537,7 @@ export function PripremiClient() {
               )}
             </div>
           </div>
+          )}
         </div>
       </div>
     </>

@@ -197,6 +197,8 @@ function normalizePrepSession(entity: StrapiEntity): PrepSession | null {
     description,
     faculty: facultyName,
     instructor: instructorName,
+    startDateIso,
+    endDateIso,
     startDate: startDateLabel || "Непознат датум",
     dateRange: dateRangeStored || deriveDateRange(startDateIso, endDateIso) || startDateLabel,
     duration,

@@ -16,10 +16,6 @@ import { loadPrepSessions } from "@/data/prepSessionsApi";
 import type { PrepSession } from "@/types";
 import { cn } from "@/utils/cn";
 
-const MONTH_NAME = "Март 2026";
-const MONTH = 2; // March (0-indexed)
-const YEAR = 2026;
-
 function SessionCardSkeleton() {
   return (
     <div className="bg-white border-2 border-[#1E424A]/10 rounded-2xl p-6 shadow-lg h-[480px] animate-pulse">
@@ -93,9 +89,9 @@ function getFirstDayOfMonth(month: number, year: number) {
   return new Date(year, month, 1).getDay();
 }
 
-function buildCalendarWeeks(): (number | null)[][] {
-  const daysInMonth = getDaysInMonth(MONTH, YEAR);
-  const firstDay = getFirstDayOfMonth(MONTH, YEAR);
+function buildCalendarWeeks(month: number, year: number): (number | null)[][] {
+  const daysInMonth = getDaysInMonth(month, year);
+  const firstDay = getFirstDayOfMonth(month, year);
   const weeks: (number | null)[][] = [];
   let week: (number | null)[] = Array(firstDay).fill(null);
 
@@ -112,8 +108,6 @@ function buildCalendarWeeks(): (number | null)[][] {
   }
   return weeks;
 }
-
-const calendarWeeks = buildCalendarWeeks();
 
 const defaultEventPalette = [
   { bg: "rgba(0, 128, 129, 0.15)", text: "#008081" },
@@ -134,6 +128,8 @@ function getEventColor(session: PrepSession, index: number) {
 function getEventsForWeek(
   weekDays: (number | null)[],
   sessions: PrepSession[],
+  month: number,
+  year: number,
 ) {
   const seen = new Set<string>();
   const result: { session: PrepSession; startCol: number; endCol: number }[] =
@@ -142,12 +138,13 @@ function getEventsForWeek(
   weekDays.forEach((day) => {
     if (!day) return;
     sessions.forEach((session) => {
-      if (!session.calendarDates.includes(day) || seen.has(session.id)) return;
+      const range = getSessionRangeForMonth(session, month, year);
+      if (!range || day < range.startDay || day > range.endDay || seen.has(session.id)) {
+        return;
+      }
       seen.add(session.id);
-      const startDay = Math.min(...session.calendarDates);
-      const endDay = Math.max(...session.calendarDates);
-      const startCol = weekDays.findIndex((d) => d === startDay);
-      const endCol = weekDays.findIndex((d) => d === endDay);
+      const startCol = weekDays.findIndex((d) => d === range.startDay);
+      const endCol = weekDays.findIndex((d) => d === range.endDay);
       result.push({
         session,
         startCol: startCol !== -1 ? startCol : 0,
@@ -158,11 +155,76 @@ function getEventsForWeek(
   return result;
 }
 
+function parseIsoDate(value?: string) {
+  if (!value) return null;
+  const parsed = new Date(value);
+  return Number.isNaN(parsed.getTime()) ? null : parsed;
+}
+
+function toMonthKey(year: number, month: number) {
+  return `${year}-${String(month + 1).padStart(2, "0")}`;
+}
+
+function formatMonthLabel(year: number, month: number) {
+  const label = new Intl.DateTimeFormat("mk-MK", {
+    month: "long",
+    year: "numeric",
+  }).format(new Date(year, month, 1));
+  return label.charAt(0).toUpperCase() + label.slice(1);
+}
+
+function getSessionRangeForMonth(
+  session: PrepSession,
+  month: number,
+  year: number,
+) {
+  const start = parseIsoDate(session.startDateIso);
+  const end = parseIsoDate(session.endDateIso ?? session.startDateIso);
+  if (!start || !end) return null;
+
+  const monthStart = new Date(year, month, 1);
+  const monthEnd = new Date(year, month + 1, 0);
+  if (end < monthStart || start > monthEnd) return null;
+
+  const visibleStart = start < monthStart ? monthStart : start;
+  const visibleEnd = end > monthEnd ? monthEnd : end;
+
+  return {
+    startDay: visibleStart.getDate(),
+    endDay: visibleEnd.getDate(),
+  };
+}
+
+function getSessionMonthKeys(session: PrepSession) {
+  const start = parseIsoDate(session.startDateIso);
+  const end = parseIsoDate(session.endDateIso ?? session.startDateIso);
+  if (!start || !end) return [];
+
+  const keys: { key: string; year: number; month: number; label: string }[] = [];
+  const cursor = new Date(start.getFullYear(), start.getMonth(), 1);
+  const limit = new Date(end.getFullYear(), end.getMonth(), 1);
+
+  while (cursor <= limit) {
+    const year = cursor.getFullYear();
+    const month = cursor.getMonth();
+    keys.push({
+      key: toMonthKey(year, month),
+      year,
+      month,
+      label: formatMonthLabel(year, month),
+    });
+    cursor.setMonth(cursor.getMonth() + 1);
+  }
+
+  return keys;
+}
+
 export function PripremiClient() {
   const [sessions, setSessions] = useState<PrepSession[]>([]);
   const [query, setQuery] = useState("");
   const [activeFilter, setActiveFilter] = useState("Сите Припреми");
   const [selectedEvent, setSelectedEvent] = useState<PrepSession | null>(null);
+  const [selectedMonthKey, setSelectedMonthKey] = useState("");
   const [isLoading, setIsLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isFallbackData, setIsFallbackData] = useState(false);
@@ -209,6 +271,53 @@ export function PripremiClient() {
       activeFilter === "Сите Припреми" || s.faculty === activeFilter;
     return matchesQuery && matchesFilter;
   });
+
+  const availableMonths = useMemo(() => {
+    const monthMap = new Map<
+      string,
+      { key: string; year: number; month: number; label: string }
+    >();
+
+    filtered.forEach((session) => {
+      getSessionMonthKeys(session).forEach((monthData) => {
+        monthMap.set(monthData.key, monthData);
+      });
+    });
+
+    return Array.from(monthMap.values()).sort((a, b) =>
+      a.key.localeCompare(b.key),
+    );
+  }, [filtered]);
+
+  useEffect(() => {
+    if (!availableMonths.length) {
+      setSelectedMonthKey("");
+      return;
+    }
+
+    if (!availableMonths.some((month) => month.key === selectedMonthKey)) {
+      setSelectedMonthKey(availableMonths[0].key);
+    }
+  }, [availableMonths, selectedMonthKey]);
+
+  const activeMonth =
+    availableMonths.find((month) => month.key === selectedMonthKey) ?? null;
+
+  const calendarWeeks = useMemo(() => {
+    if (!activeMonth) return [];
+    return buildCalendarWeeks(activeMonth.month, activeMonth.year);
+  }, [activeMonth]);
+
+  const monthSessions = useMemo(() => {
+    if (!activeMonth) return [];
+    return filtered.filter((session) =>
+      getSessionRangeForMonth(session, activeMonth.month, activeMonth.year),
+    );
+  }, [activeMonth, filtered]);
+
+  const activeMonthIndex = activeMonth
+    ? availableMonths.findIndex((month) => month.key === activeMonth.key)
+    : -1;
 
   useEffect(() => {
     if (
@@ -367,18 +476,35 @@ export function PripremiClient() {
             <div className="bg-white border-2 border-[#1E424A]/10 rounded-2xl p-6 shadow-lg">
               <div className="flex items-center justify-between mb-6">
                 <h3 className="text-2xl font-bold text-[#1E424A]">
-                  {MONTH_NAME}
+                  {activeMonth?.label ?? "Нема датум"}
                 </h3>
                 <div className="flex gap-2">
                   <button
+                    type="button"
+                    onClick={() => {
+                      if (activeMonthIndex > 0) {
+                        setSelectedMonthKey(availableMonths[activeMonthIndex - 1].key);
+                      }
+                    }}
                     className="p-2 rounded-lg border border-[#1E424A]/20 hover:bg-[#008081]/10 transition-colors"
                     aria-label="Previous month"
+                    disabled={activeMonthIndex <= 0}
                   >
                     <ChevronLeft className="w-5 h-5 text-[#1E424A]" />
                   </button>
                   <button
+                    type="button"
+                    onClick={() => {
+                      if (activeMonthIndex < availableMonths.length - 1) {
+                        setSelectedMonthKey(availableMonths[activeMonthIndex + 1].key);
+                      }
+                    }}
                     className="p-2 rounded-lg border border-[#1E424A]/20 hover:bg-[#008081]/10 transition-colors"
                     aria-label="Next month"
+                    disabled={
+                      activeMonthIndex === -1
+                      || activeMonthIndex >= availableMonths.length - 1
+                    }
                   >
                     <ChevronRight className="w-5 h-5 text-[#1E424A]" />
                   </button>
@@ -402,7 +528,14 @@ export function PripremiClient() {
 
                 {/* Weeks */}
                 {calendarWeeks.map((week, wi) => {
-                  const weekEvents = getEventsForWeek(week, sessions);
+                  const weekEvents = activeMonth
+                    ? getEventsForWeek(
+                        week,
+                        monthSessions,
+                        activeMonth.month,
+                        activeMonth.year,
+                      )
+                    : [];
                   return (
                     <div key={wi} className="relative mb-1">
                       <div

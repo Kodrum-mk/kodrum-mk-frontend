@@ -19,6 +19,8 @@ export interface PrepSession {
   description: string;
   faculty: string;
   instructor: string;
+  startDateIso?: string;
+  endDateIso?: string;
   startDate: string;
   dateRange: string;
   duration: string;

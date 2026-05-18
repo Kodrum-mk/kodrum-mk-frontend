@@ -136,6 +136,9 @@ export function PricingSection() {
                     {card.discount}
                   </span>
                 </div>
+                <div className="mb-2 text-sm font-extrabold uppercase tracking-wide text-[#1E424A]">
+                  Попуст:
+                </div>
                 <div className="inline-flex rounded-lg bg-[#FACC0B] px-4 py-2 text-lg font-black text-[#1E424A] shadow-sm">
                   {card.savings}
                 </div>

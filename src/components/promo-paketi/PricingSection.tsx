@@ -22,7 +22,7 @@ function getNoteIcon(noteText?: string) {
 
 function PromoCardSkeleton() {
   return (
-    <div className="w-full md:w-[calc(50%-1rem)] lg:w-[calc(33.333%-1.334rem)] max-w-[420px] bg-white rounded-xl border border-[#1E424A]/10 shadow-md p-8 flex flex-col animate-pulse">
+    <div className="w-full max-w-[430px] bg-white rounded-xl border border-[#1E424A]/10 shadow-md p-8 flex flex-col animate-pulse">
       <div className="mb-6 h-8 w-28 rounded-lg bg-[#FACC0B]/20" />
       <div className="mb-6">
         <div className="w-16 h-16 rounded-full bg-[#008081]/10" />
@@ -81,12 +81,14 @@ export function PricingSection() {
             {errorMessage}
           </div>
         )}
-        <div className="flex flex-wrap justify-center gap-8">
+        <div className="mx-auto grid w-full max-w-[920px] grid-cols-1 justify-items-center gap-8 md:grid-cols-2">
           {isLoading ? Array.from({ length: 3 }).map((_, index) => (
             <PromoCardSkeleton key={index} />
           )) : cards.map((card, index) => {
             const Icon = getCardIcon(index, card);
             const NoteIcon = getNoteIcon(card.noteText);
+            const isCenteredLastCard =
+              cards.length > 1 && cards.length % 2 === 1 && index === cards.length - 1;
 
             return (
               <Link
@@ -94,7 +96,9 @@ export function PricingSection() {
                 href={card.registrationUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className={`w-full md:w-[calc(50%-1rem)] lg:w-[calc(33.333%-1.334rem)] max-w-[420px] bg-white rounded-xl shadow-md p-8 flex flex-col hover:shadow-xl transition-shadow ${
+                className={`w-full max-w-[430px] bg-white rounded-xl shadow-md p-8 flex flex-col hover:shadow-xl transition-shadow ${
+                  isCenteredLastCard ? "md:col-span-2" : ""
+                } ${
                   card.featured
                     ? "border-2 border-[#008081] lg:scale-105"
                     : "border border-[#1E424A]/10"
@@ -123,16 +127,16 @@ export function PricingSection() {
               </p>
 
               {/* Price */}
-              <div className="bg-[#F2F0E7] rounded-lg p-5 mb-6 border border-[#FACC0B]/40">
-                <div className="flex flex-wrap items-end gap-3 mb-3">
-                  <span className="text-base text-[#1E424A]/50 line-through">
+              <div className="bg-[#F2F0E7] rounded-lg p-6 mb-6 border-2 border-[#FACC0B]/60 text-center">
+                <div className="mb-3 flex flex-wrap items-baseline justify-center gap-4">
+                  <span className="text-lg text-[#1E424A]/50 line-through">
                     {card.originalPrice}
                   </span>
-                  <span className="text-3xl md:text-4xl font-extrabold text-[#008081] leading-none">
+                  <span className="text-5xl font-black leading-none text-[#008081]">
                     {card.discount}
                   </span>
                 </div>
-                <div className="inline-flex rounded-lg bg-[#FACC0B] px-3 py-1.5 text-base font-extrabold text-[#1E424A]">
+                <div className="inline-flex rounded-lg bg-[#FACC0B] px-4 py-2 text-lg font-black text-[#1E424A] shadow-sm">
                   {card.savings}
                 </div>
               </div>

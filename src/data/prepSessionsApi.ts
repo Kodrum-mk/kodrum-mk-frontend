@@ -104,7 +104,8 @@ function deriveCalendarDates(startDate?: string, endDate?: string): number[] {
 }
 
 function deriveDateRange(startDate?: string, endDate?: string): string {
-  if (!startDate || !endDate) return "";
+  if (!startDate) return "";
+  if (!endDate) return toMkDateLabel(startDate);
   const start = new Date(startDate);
   const end = new Date(endDate);
   if (Number.isNaN(start.getTime()) || Number.isNaN(end.getTime())) return "";
@@ -119,6 +120,12 @@ function deriveDateRange(startDate?: string, endDate?: string): string {
   }
 
   return `${toMkDateLabel(startDate)} - ${toMkDateLabel(endDate)}`;
+}
+
+function isUsefulDateRange(value?: string): value is string {
+  if (!value) return false;
+  const trimmed = value.trim();
+  return /[а-шa-z]/i.test(trimmed);
 }
 
 function mapLevel(level?: string): string {
@@ -200,7 +207,9 @@ function normalizePrepSession(entity: StrapiEntity): PrepSession | null {
     startDateIso,
     endDateIso,
     startDate: startDateLabel || "Непознат датум",
-    dateRange: dateRangeStored || deriveDateRange(startDateIso, endDateIso) || startDateLabel,
+    dateRange: isUsefulDateRange(dateRangeStored)
+      ? dateRangeStored
+      : deriveDateRange(startDateIso, endDateIso) || startDateLabel,
     duration,
     level: mapLevel(getEntityField<string>(entity, "level")),
     status: mapStatus(

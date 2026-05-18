@@ -20,6 +20,15 @@ function getNoteIcon(noteText?: string) {
   return Clock;
 }
 
+function formatSavingsAmount(savings: string) {
+  return savings
+    .replace(/заштеди/gi, "")
+    .replace(/до/gi, "")
+    .replace(/мкд/gi, "")
+    .replace(/денари/gi, "")
+    .trim();
+}
+
 function PromoCardSkeleton() {
   return (
     <div className="w-full max-w-[430px] bg-white rounded-xl border border-[#1E424A]/10 shadow-md p-8 flex flex-col animate-pulse">
@@ -89,6 +98,7 @@ export function PricingSection() {
             const NoteIcon = getNoteIcon(card.noteText);
             const isCenteredLastCard =
               cards.length > 1 && cards.length % 2 === 1 && index === cards.length - 1;
+            const savingsAmount = formatSavingsAmount(card.savings);
 
             return (
               <Link
@@ -137,17 +147,22 @@ export function PricingSection() {
                   </span>
                 </div>
                 <div className="mb-2 text-sm font-extrabold uppercase tracking-wide text-[#1E424A]">
-                  Попуст:
+                  Заштеди:
                 </div>
-                <div className="inline-flex rounded-lg bg-[#FACC0B] px-4 py-2 text-lg font-black text-[#1E424A] shadow-sm">
-                  {card.savings}
+                <div className="inline-flex flex-col items-center rounded-lg bg-[#FACC0B] px-5 py-2 text-[#1E424A] shadow-sm">
+                  <span className="text-2xl font-black leading-none">
+                    {savingsAmount}
+                  </span>
+                  <span className="text-xs font-extrabold uppercase tracking-wide">
+                    денари
+                  </span>
                 </div>
               </div>
 
               {/* Courses */}
               <div className="mb-6">
                 <h4 className="text-sm font-bold text-[#1E424A] mb-3">
-                  Вклучени курсеви:
+                  Вклучени припреми:
                 </h4>
                 <ul className="space-y-2">
                   {card.courses.map((c) => (

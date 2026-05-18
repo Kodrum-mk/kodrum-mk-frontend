@@ -536,21 +536,23 @@ export function PripremiClient() {
                         activeMonth.year,
                       )
                     : [];
+                  const weekHeight = Math.max(100, 34 + weekEvents.length * 22);
                   return (
                     <div key={wi} className="relative mb-1">
                       <div
                         className="grid grid-cols-7 gap-1"
-                        style={{ minHeight: 100 }}
+                        style={{ minHeight: weekHeight }}
                       >
                         {week.map((day, di) => (
                           <div
                             key={di}
                             className={cn(
-                              "relative rounded-lg border min-h-[100px]",
+                              "relative rounded-lg border",
                               !day
                                 ? "bg-transparent border-transparent"
                                 : "bg-white border-[#1E424A]/10",
                             )}
+                            style={{ minHeight: weekHeight }}
                           >
                             {day && (
                               <div className="absolute top-1.5 left-2 text-sm font-medium text-[#1E424A] z-10">

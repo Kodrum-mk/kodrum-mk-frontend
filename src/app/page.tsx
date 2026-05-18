@@ -7,7 +7,7 @@ import { InfoSection } from "@/components/home/InfoSection";
 export const metadata: Metadata = {
   title: "Кодрум – Испитна подготовка за студенти",
   description:
-    "Подгови се за испити преку практично решавање на задачи, фокусирана подготовка и флексибилни формати на учење.",
+    "Сега е вистинско време да завршите со испитите и да уживате во летото без стрес! 😎🌴",
 };
 
 export default function HomePage() {

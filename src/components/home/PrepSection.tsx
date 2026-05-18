@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { Calendar, ChevronRight } from "lucide-react";
-import { prepSessions } from "@/data/prepSessions";
+import { loadPrepSessions } from "@/data/prepSessionsApi";
 
 const bullets = [
   "Подготовка за испит",
@@ -11,9 +11,10 @@ const bullets = [
   "Фокусот е на решавање испитни задачи и практична подготовка",
 ];
 
-const upcoming = prepSessions.slice(0, 3);
+export async function PrepSection() {
+  const { sessions } = await loadPrepSessions();
+  const upcoming = sessions.slice(0, 3);
 
-export function PrepSection() {
   return (
     <section className="bg-white py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-7xl mx-auto">

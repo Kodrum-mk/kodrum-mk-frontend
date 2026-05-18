@@ -22,7 +22,7 @@ function getNoteIcon(noteText?: string) {
 
 function PromoCardSkeleton() {
   return (
-    <div className="bg-white rounded-xl border border-[#1E424A]/10 shadow-md p-8 flex flex-col animate-pulse">
+    <div className="w-full md:w-[calc(50%-1rem)] lg:w-[calc(33.333%-1.334rem)] max-w-[420px] bg-white rounded-xl border border-[#1E424A]/10 shadow-md p-8 flex flex-col animate-pulse">
       <div className="mb-6 h-8 w-28 rounded-lg bg-[#FACC0B]/20" />
       <div className="mb-6">
         <div className="w-16 h-16 rounded-full bg-[#008081]/10" />
@@ -81,7 +81,7 @@ export function PricingSection() {
             {errorMessage}
           </div>
         )}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        <div className="flex flex-wrap justify-center gap-8">
           {isLoading ? Array.from({ length: 3 }).map((_, index) => (
             <PromoCardSkeleton key={index} />
           )) : cards.map((card, index) => {
@@ -94,7 +94,7 @@ export function PricingSection() {
                 href={card.registrationUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className={`bg-white rounded-xl shadow-md p-8 flex flex-col hover:shadow-xl transition-shadow ${
+                className={`w-full md:w-[calc(50%-1rem)] lg:w-[calc(33.333%-1.334rem)] max-w-[420px] bg-white rounded-xl shadow-md p-8 flex flex-col hover:shadow-xl transition-shadow ${
                   card.featured
                     ? "border-2 border-[#008081] lg:scale-105"
                     : "border border-[#1E424A]/10"
@@ -123,16 +123,16 @@ export function PricingSection() {
               </p>
 
               {/* Price */}
-              <div className="bg-[#F2F0E7] rounded-lg p-5 mb-6">
-                <div className="flex items-center gap-3 mb-2">
+              <div className="bg-[#F2F0E7] rounded-lg p-5 mb-6 border border-[#FACC0B]/40">
+                <div className="flex flex-wrap items-end gap-3 mb-3">
                   <span className="text-base text-[#1E424A]/50 line-through">
                     {card.originalPrice}
                   </span>
-                  <span className="text-xl font-bold text-[#008081]">
+                  <span className="text-3xl md:text-4xl font-extrabold text-[#008081] leading-none">
                     {card.discount}
                   </span>
                 </div>
-                <div className="text-sm text-[#008081] font-semibold">
+                <div className="inline-flex rounded-lg bg-[#FACC0B] px-3 py-1.5 text-base font-extrabold text-[#1E424A]">
                   {card.savings}
                 </div>
               </div>

@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { ChevronRight } from "lucide-react";
 import { motion } from "framer-motion";
 
@@ -64,6 +63,9 @@ export function CoursesPreview() {
     <section className="min-h-screen bg-white py-16 px-4 sm:px-6 lg:px-8 flex flex-col justify-center overflow-hidden">
       <div className="max-w-7xl mx-auto w-full mb-12">
         <div className="text-center mb-12">
+          <span className="inline-flex mb-3 rounded-lg bg-[#FACC0B]/20 px-4 py-1.5 text-sm font-semibold text-[#FACC0B]">
+            Наскоро
+          </span>
           <h2 className="text-4xl md:text-5xl font-bold text-[#1E424A] mb-4">
             Курсеви
           </h2>
@@ -71,15 +73,13 @@ export function CoursesPreview() {
             Истражувајте ги нашите курсеви по факултет и погледнете кои предмети
             се моментално достапни за подготовка.
           </p>
-          <a
-            href="https://courses.kodrum.dev"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="bg-[#008081] hover:bg-[#006566] text-white font-medium py-3 px-8 rounded-lg transition-colors shadow-md inline-flex items-center gap-2 text-sm"
+          <button
+            type="button"
+            className="bg-[#008081] text-white font-medium py-3 px-8 rounded-lg shadow-md inline-flex items-center gap-2 text-sm cursor-default"
           >
             Види ги сите
             <ChevronRight className="w-5 h-5" aria-hidden="true" />
-          </a>
+          </button>
         </div>
       </div>
 

@@ -8,7 +8,7 @@ import { cn } from "@/utils/cn";
 
 const navLinks = [
   { label: "Почетна", href: "/" },
-  { label: "Курсеви", href: "https://courses.kodrum.dev" },
+  { label: "Курсеви", href: null, disabled: true },
   { label: "Припреми", href: "/pripremi" },
   { label: "Промо пакети", href: "/promo-paketi" },
   { label: "Контакт", href: "/kontakt" },
@@ -38,6 +38,22 @@ export function Navbar() {
           {/* Desktop nav */}
           <div className="hidden md:flex items-center gap-8">
             {navLinks.map((link) => {
+              if (link.disabled) {
+                return (
+                  <span
+                    key={link.label}
+                    className="relative text-[#1E424A]/60 font-medium text-sm cursor-default"
+                  >
+                    {link.label}
+                    <span className="absolute left-0 top-1/2 h-0.5 w-full -rotate-12 bg-[#FACC0B]" />
+                  </span>
+                );
+              }
+
+              if (!link.href) {
+                return null;
+              }
+
               const isExternal = link.href.startsWith("http");
               return isExternal ? (
                 <a
@@ -96,6 +112,22 @@ export function Navbar() {
       >
         <div className="max-w-7xl mx-auto px-4 flex flex-col gap-1">
           {navLinks.map((link) => {
+              if (link.disabled) {
+                return (
+                  <span
+                    key={link.label}
+                    className="relative mx-3 my-2.5 w-fit text-[#1E424A]/60 font-medium text-sm cursor-default"
+                  >
+                    {link.label}
+                    <span className="absolute left-0 top-1/2 h-0.5 w-full -rotate-12 bg-[#FACC0B]" />
+                  </span>
+                );
+              }
+
+              if (!link.href) {
+                return null;
+              }
+
               const isExternal = link.href.startsWith("http");
               return isExternal ? (
                 <a

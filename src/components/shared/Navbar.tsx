@@ -42,10 +42,15 @@ export function Navbar() {
                 return (
                   <span
                     key={link.label}
-                    className="relative text-[#1E424A]/60 font-medium text-sm cursor-default"
+                    className="relative inline-flex flex-col items-center text-[#1E424A]/60 font-medium text-sm cursor-default"
                   >
-                    {link.label}
-                    <span className="absolute left-0 top-1/2 h-0.5 w-full -rotate-12 bg-[#FACC0B]" />
+                    <span className="text-[10px] leading-none font-bold text-[#FACC0B]">
+                      Наскоро
+                    </span>
+                    <span className="relative">
+                      {link.label}
+                      <span className="absolute left-0 top-1/2 h-0.5 w-full -rotate-12 bg-[#FACC0B]" />
+                    </span>
                   </span>
                 );
               }
@@ -116,10 +121,15 @@ export function Navbar() {
                 return (
                   <span
                     key={link.label}
-                    className="relative mx-3 my-2.5 w-fit text-[#1E424A]/60 font-medium text-sm cursor-default"
+                    className="relative mx-3 my-2.5 inline-flex w-fit flex-col text-[#1E424A]/60 font-medium text-sm cursor-default"
                   >
-                    {link.label}
-                    <span className="absolute left-0 top-1/2 h-0.5 w-full -rotate-12 bg-[#FACC0B]" />
+                    <span className="text-[10px] leading-none font-bold text-[#FACC0B]">
+                      Наскоро
+                    </span>
+                    <span className="relative">
+                      {link.label}
+                      <span className="absolute left-0 top-1/2 h-0.5 w-full -rotate-12 bg-[#FACC0B]" />
+                    </span>
                   </span>
                 );
               }

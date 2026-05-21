@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server";
 
-const DISCORD_WEBHOOK_URL =
-  "https://discord.com/api/webhooks/1504853032498888704/6QyyDW2CtihvXC85ktLwG8DIMXDibVLbG_k6_3DQ0ogkx2PHr1QZrH6oBYY8Sf5w7Mx2";
+const TELEGRAM_API_BASE = "https://api.telegram.org";
 
 type ContactPayload = {
   ime?: string;
@@ -15,8 +14,24 @@ function getString(value: unknown) {
   return typeof value === "string" ? value.trim() : "";
 }
 
+function truncateMessage(message: string) {
+  return message.length > 3900 ? `${message.slice(0, 3900)}...` : message;
+}
+
 export async function POST(request: Request) {
   try {
+    const botToken = process.env.TELEGRAM_BOT_TOKEN?.trim();
+    const chatId = process.env.TELEGRAM_CHAT_ID?.trim();
+    const topicId = process.env.TELEGRAM_TOPIC_ID?.trim();
+    const messageThreadId = topicId ? Number(topicId) : undefined;
+
+    if (!botToken || !chatId) {
+      return NextResponse.json(
+        { error: "Telegram не е сетирано." },
+        { status: 500 },
+      );
+    }
+
     const body = (await request.json()) as ContactPayload;
 
     const ime = getString(body.ime);
@@ -32,23 +47,30 @@ export async function POST(request: Request) {
       );
     }
 
-    const discordResponse = await fetch(DISCORD_WEBHOOK_URL, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        content: [
-          "Нова порака од контакт форма",
-          `Име: ${ime} ${prezime}`,
-          `Email: ${email}`,
-          `Предмет: ${predmet || "-"}`,
-          `Порака: ${poraka}`,
-        ].join("\n"),
-      }),
-    });
+    const telegramResponse = await fetch(
+      `${TELEGRAM_API_BASE}/bot${botToken}/sendMessage`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          chat_id: chatId,
+          ...(messageThreadId ? { message_thread_id: messageThreadId } : {}),
+          text: truncateMessage(
+            [
+              "Нова порака од контакт форма",
+              `Име: ${ime} ${prezime}`,
+              `Email: ${email}`,
+              `Предмет: ${predmet || "-"}`,
+              `Порака: ${poraka}`,
+            ].join("\n"),
+          ),
+        }),
+      },
+    );
 
-    if (!discordResponse.ok) {
+    if (!telegramResponse.ok) {
       return NextResponse.json(
-        { error: "Неуспешно праќање кон Discord." },
+        { error: "Неуспешно праќање кон Telegram." },
         { status: 502 },
       );
     }

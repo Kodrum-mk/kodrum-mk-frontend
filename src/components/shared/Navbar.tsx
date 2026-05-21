@@ -44,7 +44,7 @@ export function Navbar() {
                     key={link.label}
                     className="relative inline-flex flex-col items-center text-[#1E424A]/60 font-medium text-sm cursor-default"
                   >
-                    <span className="text-[10px] leading-none font-bold text-[#FACC0B]">
+                    <span className="mb-0.5 rounded bg-[#FACC0B] px-1.5 py-0.5 text-[11px] leading-none font-bold text-[#1E424A]">
                       Наскоро
                     </span>
                     <span className="relative">
@@ -123,7 +123,7 @@ export function Navbar() {
                     key={link.label}
                     className="relative mx-3 my-2.5 inline-flex w-fit flex-col text-[#1E424A]/60 font-medium text-sm cursor-default"
                   >
-                    <span className="text-[10px] leading-none font-bold text-[#FACC0B]">
+                    <span className="mb-0.5 w-fit rounded bg-[#FACC0B] px-1.5 py-0.5 text-[11px] leading-none font-bold text-[#1E424A]">
                       Наскоро
                     </span>
                     <span className="relative">

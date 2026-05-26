@@ -138,22 +138,14 @@ export function PricingSection() {
 
               {/* Price */}
               <div className="bg-[#F2F0E7] rounded-lg p-6 mb-6 border-2 border-[#FACC0B]/60 text-center">
-                <div className="mb-3 flex flex-wrap items-baseline justify-center gap-4">
-                  <span className="text-lg text-[#1E424A]/50 line-through">
-                    {card.originalPrice}
-                  </span>
-                  <span className="text-5xl font-black leading-none text-[#008081]">
-                    {card.discount}
-                  </span>
-                </div>
-                <div className="mb-2 text-sm font-extrabold uppercase tracking-wide text-[#1E424A]">
+                <div className="mb-3 text-xl font-extrabold uppercase tracking-wide text-[#1E424A]">
                   Заштеди:
                 </div>
-                <div className="inline-flex flex-col items-center rounded-lg bg-[#FACC0B] px-5 py-2 text-[#1E424A] shadow-sm">
-                  <span className="text-2xl font-black leading-none">
+                <div className="inline-flex flex-col items-center rounded-lg bg-[#FACC0B] px-8 py-4 text-[#1E424A] shadow-sm">
+                  <span className="text-5xl font-black leading-none">
                     {savingsAmount}
                   </span>
-                  <span className="text-xs font-extrabold uppercase tracking-wide">
+                  <span className="text-base font-extrabold uppercase tracking-wide">
                     денари
                   </span>
                 </div>

@@ -15,6 +15,7 @@ import { eventColors } from "@/data/prepSessions";
 import { loadPrepSessions } from "@/data/prepSessionsApi";
 import type { PrepSession } from "@/types";
 import { cn } from "@/utils/cn";
+import { PrepPrice } from "./PrepPrice";
 
 function SessionCardSkeleton() {
   return (
@@ -446,12 +447,8 @@ export function PripremiClient() {
                       </div>
                     ))}
                   </div>
-                  {session.price && (
-                    <div className="mt-auto mb-3 rounded-lg border-2 border-[#D32F2F] px-4 py-2 text-center text-lg font-bold text-[#D32F2F]">
-                      {session.price.toLocaleString("mk-MK")} МКД
-                    </div>
-                  )}
-                  <div className="w-full bg-[#008081] hover:bg-[#006566] text-white font-medium py-3 px-6 rounded-lg transition-colors shadow-md text-sm text-center">
+                  <PrepPrice price={session.price} className="mt-auto mb-3" />
+                  <div className="w-full bg-[#008081] hover:bg-[#006566] text-white font-bold py-3 px-6 rounded-lg transition-colors shadow-md text-lg text-center">
                     Пријави се
                   </div>
                 </Link>
@@ -661,11 +658,12 @@ export function PripremiClient() {
                       </div>
                     ))}
                   </div>
+                  <PrepPrice price={selectedEvent.price} className="mb-3" />
                   <Link
                     href={selectedEvent.registrationUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="w-full bg-[#008081] hover:bg-[#006566] text-white font-medium py-3 px-6 rounded-lg transition-colors shadow-md text-sm text-center"
+                    className="w-full bg-[#008081] hover:bg-[#006566] text-white font-bold py-3 px-6 rounded-lg transition-colors shadow-md text-lg text-center"
                   >
                     Пријави се
                   </Link>

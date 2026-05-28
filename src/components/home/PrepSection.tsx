@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Calendar, ChevronRight } from "lucide-react";
 import { loadPrepSessions } from "@/data/prepSessionsApi";
+import { PrepPrice } from "@/components/pripremi/PrepPrice";
 
 const bullets = [
   "Подготовка за испит",
@@ -77,11 +78,7 @@ export async function PrepSection() {
                       </div>
                     </div>
                     <div className="text-right flex-shrink-0">
-                      {prep.price && (
-                        <div className="mb-1 rounded border border-[#D32F2F] px-2 py-0.5 text-sm font-bold text-[#D32F2F]">
-                          {prep.price.toLocaleString("mk-MK")} МКД
-                        </div>
-                      )}
+                      <PrepPrice price={prep.price} compact className="mb-1" />
                       <div className="text-xl font-bold text-[#1E424A] whitespace-nowrap">
                         {prep.dateRange}
                       </div>

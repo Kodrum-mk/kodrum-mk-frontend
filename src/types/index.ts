@@ -24,6 +24,7 @@ export interface PrepSession {
   startDate: string;
   dateRange: string;
   duration: string;
+  price?: number;
   level: string;
   status: string;
   format: string;

@@ -25,6 +25,7 @@ type StrapiEntity = {
   endDate?: string;
   dateRange?: string;
   duration?: string;
+  price?: number;
   level?: string;
   status?: string;
   registrationStatus?: string;
@@ -169,6 +170,11 @@ function mapFormat(format?: string): string {
   }
 }
 
+function normalizePrice(price: unknown): number | undefined {
+  const parsed = Number(price);
+  return Number.isFinite(parsed) && parsed > 0 ? Math.round(parsed) : undefined;
+}
+
 function normalizePrepSession(entity: StrapiEntity): PrepSession | null {
   const relationFaculty = getRelationEntity(entity.faculty ?? null);
   const relationInstructor = getRelationEntity(entity.instructor ?? null);
@@ -176,6 +182,7 @@ function normalizePrepSession(entity: StrapiEntity): PrepSession | null {
   const title = getEntityField<string>(entity, "title")?.trim();
   const description = getEntityField<string>(entity, "description")?.trim();
   const duration = getEntityField<string>(entity, "duration")?.trim();
+  const price = normalizePrice(getEntityField<number>(entity, "price"));
   const registrationUrl = getEntityField<string>(entity, "registrationUrl")?.trim();
 
   if (!title || !description || !duration) return null;
@@ -211,6 +218,7 @@ function normalizePrepSession(entity: StrapiEntity): PrepSession | null {
       ? dateRangeStored
       : deriveDateRange(startDateIso, endDateIso) || startDateLabel,
     duration,
+    price,
     level: mapLevel(getEntityField<string>(entity, "level")),
     status: mapStatus(
       getEntityField<string>(entity, "status")

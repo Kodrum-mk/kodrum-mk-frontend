@@ -20,29 +20,28 @@ export function PrepPrice({ price, compact = false, className }: PrepPriceProps)
   return (
     <div
       className={cn(
-        "rounded-lg border-2 border-[#FACC0B] bg-[#1E424A] text-center shadow-sm",
+        "rounded-lg border-2 border-[#FACC0B] bg-white shadow-sm",
         compact ? "px-3 py-2" : "px-4 py-3",
         className,
       )}
     >
       <div
         className={cn(
-          "flex items-center justify-center gap-2",
-          compact ? "mb-0.5 text-[11px]" : "mb-1 text-xs",
+          "flex items-baseline justify-center gap-3",
+          compact ? "text-xs" : "text-base",
         )}
       >
-        <span className="font-bold text-[#FACC0B]">-500 МКД</span>
-        <span className="text-white/55 line-through">
+        <span className="font-semibold text-[#1E424A]/45 line-through">
           {formatMkd(originalPrice)}
         </span>
-      </div>
-      <div
-        className={cn(
-          "font-extrabold text-[#FACC0B]",
-          compact ? "text-base" : "text-2xl",
-        )}
-      >
-        {formatMkd(price)}
+        <span
+          className={cn(
+            "font-extrabold text-[#FACC0B]",
+            compact ? "text-lg" : "text-2xl",
+          )}
+        >
+          {formatMkd(price)}
+        </span>
       </div>
     </div>
   );

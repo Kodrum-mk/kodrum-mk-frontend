@@ -658,7 +658,6 @@ export function PripremiClient() {
                       </div>
                     ))}
                   </div>
-                  <PrepPrice price={selectedEvent.price} className="mb-3" />
                   <Link
                     href={selectedEvent.registrationUrl}
                     target="_blank"

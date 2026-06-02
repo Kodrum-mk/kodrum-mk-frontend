@@ -24,7 +24,7 @@ const questions: Question[] = [
 
 export function InfoQuestions() {
   return (
-    <div className="space-y-8">
+    <div data-analytics-section="faq" className="space-y-8">
       {questions.map((item) => (
         <div
           key={item.question}
@@ -37,7 +37,10 @@ export function InfoQuestions() {
           {item.bulletPoints && (
             <ul className="list-disc list-inside space-y-1 ml-2">
               {item.bulletPoints.map((pt) => (
-                <li key={pt} className="text-base text-[#1E424A]/70 leading-relaxed">
+                <li
+                  key={pt}
+                  className="text-base text-[#1E424A]/70 leading-relaxed"
+                >
                   {pt}
                 </li>
               ))}

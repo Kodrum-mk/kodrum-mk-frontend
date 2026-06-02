@@ -3,6 +3,7 @@
 import { useEffect } from "react";
 import { usePathname, useSearchParams } from "next/navigation";
 import Script from "next/script";
+import { trackPageView } from "@/utils/analytics";
 
 declare global {
   interface Window {
@@ -25,12 +26,7 @@ export function GoogleAnalytics({ measurementId }: GoogleAnalyticsProps) {
       window.gtag = (...args: unknown[]) => window.dataLayer?.push(args);
     }
 
-    const query = searchParams.toString();
-    const pagePath = query ? `${pathname}?${query}` : pathname;
-
-    window.gtag("event", "page_view", {
-      page_path: pagePath,
-    });
+    trackPageView(pathname);
   }, [pathname, searchParams]);
 
   return (

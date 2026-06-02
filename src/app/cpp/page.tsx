@@ -54,7 +54,7 @@ export default function CppPage() {
           не го пронајдеш тоа што го барате, не колебај се да нè контактираш.
         </p>
 
-        <div className="space-y-4">
+        <div data-analytics-section="faq" className="space-y-4">
           {faqs.map((faq) => (
             <div
               key={faq.q}
@@ -62,7 +62,10 @@ export default function CppPage() {
             >
               <div className="flex items-start gap-4">
                 <div className="w-8 h-8 rounded-lg bg-[#008081]/10 flex items-center justify-center flex-shrink-0 mt-0.5">
-                  <ChevronRight className="w-5 h-5 text-[#008081]" aria-hidden="true" />
+                  <ChevronRight
+                    className="w-5 h-5 text-[#008081]"
+                    aria-hidden="true"
+                  />
                 </div>
                 <div>
                   <h3 className="text-base font-bold text-[#1E424A] mb-2">

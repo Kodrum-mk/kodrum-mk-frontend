@@ -1,7 +1,8 @@
 "use client";
 
 import type { FormEvent } from "react";
-import { useState } from "react";
+import { useRef, useState } from "react";
+import { trackEvent } from "@/utils/analytics";
 
 type FormState = {
   ime: string;
@@ -22,7 +23,18 @@ const initialState: FormState = {
 export function ContactForm() {
   const [form, setForm] = useState<FormState>(initialState);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [status, setStatus] = useState<{ type: "success" | "error"; message: string } | null>(null);
+  const [status, setStatus] = useState<{
+    type: "success" | "error";
+    message: string;
+  } | null>(null);
+  const hasTrackedStart = useRef(false);
+
+  function trackFormStart() {
+    if (hasTrackedStart.current) return;
+    hasTrackedStart.current = true;
+    // contact_form_start: first focus/click inside contact form.
+    trackEvent("contact_form_start", { form_name: "contact" });
+  }
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -47,11 +59,15 @@ export function ContactForm() {
         type: "success",
         message: "Пораката е испратена.",
       });
+      // contact_form_submit: only after successful API response.
+      trackEvent("contact_form_submit", { form_name: "contact" });
     } catch (error) {
       setStatus({
         type: "error",
         message: error instanceof Error ? error.message : "Неуспешно праќање.",
       });
+      // contact_form_error: failed contact form submission.
+      trackEvent("contact_form_error", { form_name: "contact" });
     } finally {
       setIsSubmitting(false);
     }
@@ -63,10 +79,13 @@ export function ContactForm() {
 
   return (
     <div className="bg-[#F2F0E7] rounded-2xl p-8 shadow-lg">
-      <h2 className="text-2xl font-bold text-[#1E424A] mb-6">
-        Испрати порака
-      </h2>
-      <form className="space-y-5" onSubmit={handleSubmit}>
+      <h2 className="text-2xl font-bold text-[#1E424A] mb-6">Испрати порака</h2>
+      <form
+        className="space-y-5"
+        onSubmit={handleSubmit}
+        onFocus={trackFormStart}
+        onClick={trackFormStart}
+      >
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
             <label

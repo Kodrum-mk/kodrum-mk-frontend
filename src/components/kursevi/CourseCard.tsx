@@ -8,7 +8,10 @@ interface Props {
 
 export function CourseCard({ course }: Props) {
   return (
-    <article className="bg-white rounded-xl shadow-md hover:shadow-xl transition-shadow duration-300 overflow-hidden flex flex-col h-full border border-[#1E424A]/5">
+    <article
+      data-analytics-subject={course.title}
+      className="bg-white rounded-xl shadow-md hover:shadow-xl transition-shadow duration-300 overflow-hidden flex flex-col h-full border border-[#1E424A]/5"
+    >
       <div className="p-4 flex items-start gap-3">
         <Image
           src={course.thumbnail}

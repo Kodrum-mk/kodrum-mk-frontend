@@ -24,8 +24,7 @@ export async function PrepSection() {
           </h2>
           <p className="text-lg text-[#1E424A]/70 max-w-3xl mx-auto">
             Во живо или online подготовки за испит организирани по факултет и
-            предмет,
-            најавени неколку недели пред испитните рокови.
+            предмет, најавени неколку недели пред испитните рокови.
           </p>
         </div>
 
@@ -34,7 +33,10 @@ export async function PrepSection() {
           <div>
             <ul className="space-y-2.5 mb-6">
               {bullets.map((b) => (
-                <li key={b} className="flex items-start gap-3 text-[#1E424A]/80 text-sm">
+                <li
+                  key={b}
+                  className="flex items-start gap-3 text-[#1E424A]/80 text-sm"
+                >
                   <ChevronRight
                     className="w-5 h-5 text-[#008081] mt-0.5 flex-shrink-0"
                     aria-hidden="true"
@@ -45,6 +47,7 @@ export async function PrepSection() {
             </ul>
             <Link
               href="/pripremi"
+              data-analytics-subject="Припреми"
               className="bg-[#008081] hover:bg-[#006566] text-white font-medium py-3 px-8 rounded-lg transition-colors shadow-md inline-flex items-center gap-2 text-sm"
             >
               Види календар

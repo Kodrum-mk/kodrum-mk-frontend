@@ -140,7 +140,12 @@ function getEventsForWeek(
     if (!day) return;
     sessions.forEach((session) => {
       const range = getSessionRangeForMonth(session, month, year);
-      if (!range || day < range.startDay || day > range.endDay || seen.has(session.id)) {
+      if (
+        !range ||
+        day < range.startDay ||
+        day > range.endDay ||
+        seen.has(session.id)
+      ) {
         return;
       }
       seen.add(session.id);
@@ -201,7 +206,8 @@ function getSessionMonthKeys(session: PrepSession) {
   const end = parseIsoDate(session.endDateIso ?? session.startDateIso);
   if (!start || !end) return [];
 
-  const keys: { key: string; year: number; month: number; label: string }[] = [];
+  const keys: { key: string; year: number; month: number; label: string }[] =
+    [];
   const cursor = new Date(start.getFullYear(), start.getMonth(), 1);
   const limit = new Date(end.getFullYear(), end.getMonth(), 1);
 
@@ -399,6 +405,8 @@ export function PripremiClient() {
                   href={session.registrationUrl}
                   target="_blank"
                   rel="noopener noreferrer"
+                  data-analytics-subject={session.title}
+                  data-analytics-cta="booking"
                   className="bg-white border-2 border-[#1E424A]/10 rounded-2xl p-6 shadow-lg hover:shadow-xl transition-shadow flex flex-col h-[520px]"
                 >
                   <div className="flex items-center justify-between mb-4">
@@ -473,207 +481,216 @@ export function PripremiClient() {
           {isLoading ? (
             <CalendarSkeleton />
           ) : (
-          <div className="grid grid-cols-1 lg:grid-cols-[60%_40%] gap-8">
-            {/* Calendar */}
-            <div className="bg-white border-2 border-[#1E424A]/10 rounded-2xl p-6 shadow-lg">
-              <div className="flex items-center justify-between mb-6">
-                <h3 className="text-2xl font-bold text-[#1E424A]">
-                  {activeMonth?.label ?? "Нема датум"}
-                </h3>
-                <div className="flex gap-2">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      if (activeMonthIndex > 0) {
-                        setSelectedMonthKey(availableMonths[activeMonthIndex - 1].key);
+            <div className="grid grid-cols-1 lg:grid-cols-[60%_40%] gap-8">
+              {/* Calendar */}
+              <div className="bg-white border-2 border-[#1E424A]/10 rounded-2xl p-6 shadow-lg">
+                <div className="flex items-center justify-between mb-6">
+                  <h3 className="text-2xl font-bold text-[#1E424A]">
+                    {activeMonth?.label ?? "Нема датум"}
+                  </h3>
+                  <div className="flex gap-2">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (activeMonthIndex > 0) {
+                          setSelectedMonthKey(
+                            availableMonths[activeMonthIndex - 1].key,
+                          );
+                        }
+                      }}
+                      className="p-2 rounded-lg border border-[#1E424A]/20 hover:bg-[#008081]/10 transition-colors"
+                      aria-label="Previous month"
+                      disabled={activeMonthIndex <= 0}
+                    >
+                      <ChevronLeft className="w-5 h-5 text-[#1E424A]" />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (activeMonthIndex < availableMonths.length - 1) {
+                          setSelectedMonthKey(
+                            availableMonths[activeMonthIndex + 1].key,
+                          );
+                        }
+                      }}
+                      className="p-2 rounded-lg border border-[#1E424A]/20 hover:bg-[#008081]/10 transition-colors"
+                      aria-label="Next month"
+                      disabled={
+                        activeMonthIndex === -1 ||
+                        activeMonthIndex >= availableMonths.length - 1
                       }
-                    }}
-                    className="p-2 rounded-lg border border-[#1E424A]/20 hover:bg-[#008081]/10 transition-colors"
-                    aria-label="Previous month"
-                    disabled={activeMonthIndex <= 0}
-                  >
-                    <ChevronLeft className="w-5 h-5 text-[#1E424A]" />
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      if (activeMonthIndex < availableMonths.length - 1) {
-                        setSelectedMonthKey(availableMonths[activeMonthIndex + 1].key);
-                      }
-                    }}
-                    className="p-2 rounded-lg border border-[#1E424A]/20 hover:bg-[#008081]/10 transition-colors"
-                    aria-label="Next month"
-                    disabled={
-                      activeMonthIndex === -1
-                      || activeMonthIndex >= availableMonths.length - 1
-                    }
-                  >
-                    <ChevronRight className="w-5 h-5 text-[#1E424A]" />
-                  </button>
-                </div>
-              </div>
-
-              <div className="space-y-1">
-                {/* Day headers */}
-                <div className="grid grid-cols-7 gap-1 mb-2">
-                  {["Нед", "Пон", "Вто", "Сре", "Чет", "Пет", "Саб"].map(
-                    (d) => (
-                      <div
-                        key={d}
-                        className="text-center text-xs font-semibold text-[#1E424A]/60 py-2"
-                      >
-                        {d}
-                      </div>
-                    ),
-                  )}
-                </div>
-
-                {/* Weeks */}
-                {calendarWeeks.map((week, wi) => {
-                  const weekEvents = activeMonth
-                    ? getEventsForWeek(
-                        week,
-                        monthSessions,
-                        activeMonth.month,
-                        activeMonth.year,
-                      )
-                    : [];
-                  const weekHeight = Math.max(100, 34 + weekEvents.length * 22);
-                  return (
-                    <div key={wi} className="relative mb-1">
-                      <div
-                        className="grid grid-cols-7 gap-1"
-                        style={{ minHeight: weekHeight }}
-                      >
-                        {week.map((day, di) => (
-                          <div
-                            key={di}
-                            className={cn(
-                              "relative rounded-lg border",
-                              !day
-                                ? "bg-transparent border-transparent"
-                                : "bg-white border-[#1E424A]/10",
-                            )}
-                            style={{ minHeight: weekHeight }}
-                          >
-                            {day && (
-                              <div className="absolute top-1.5 left-2 text-sm font-medium text-[#1E424A] z-10">
-                                {day}
-                              </div>
-                            )}
-                          </div>
-                        ))}
-                      </div>
-
-                      {/* Event bars overlay */}
-                      {weekEvents.length > 0 && (
-                        <div className="absolute inset-0 pointer-events-none">
-                          {weekEvents.map((ev, ei) => {
-                            const color = getEventColor(ev.session, ei);
-                            return (
-                              <button
-                                key={ev.session.id}
-                                onClick={() => setSelectedEvent(ev.session)}
-                                className="pointer-events-auto cursor-pointer hover:opacity-75 transition-opacity text-left truncate rounded"
-                                style={{
-                                  position: "absolute",
-                                  left: `calc(${ev.startCol} / 7 * 100% + ${ev.startCol} * 0.25rem)`,
-                                  right: `calc((6 - ${ev.endCol}) / 7 * 100% + (6 - ${ev.endCol}) * 0.25rem)`,
-                                  top: `${28 + ei * 20}px`,
-                                  height: 18,
-                                  background: color.bg,
-                                  color: color.text,
-                                  fontSize: 11,
-                                  fontWeight: 500,
-                                  padding: "1px 6px",
-                                  whiteSpace: "nowrap",
-                                  overflow: "hidden",
-                                  border: "none",
-                                }}
-                              >
-                                {ev.session.title}
-                              </button>
-                            );
-                          })}
-                        </div>
-                      )}
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-
-            {/* Event detail panel */}
-            <div className="bg-white border-2 border-[#1E424A]/10 rounded-2xl p-6 shadow-lg">
-              <h3 className="text-xl font-bold text-[#1E424A] mb-5">
-                Детали за припремата
-              </h3>
-              {selectedEvent ? (
-                <div className="space-y-4">
-                  <span className="inline-block px-3 py-1 bg-[#FACC0B]/20 text-[#1E424A] text-xs font-bold rounded">
-                    {selectedEvent.faculty}
-                  </span>
-                  <h4 className="text-2xl font-bold text-[#1E424A]">
-                    {selectedEvent.title}
-                  </h4>
-                  <p className="text-sm text-[#1E424A]/70 leading-relaxed">
-                    {selectedEvent.description}
-                  </p>
-                  <div className="space-y-3 py-4 border-t border-b border-[#1E424A]/10">
-                    {[
-                      {
-                        Icon: CalendarIcon,
-                        label: "Датум",
-                        value: selectedEvent.dateRange,
-                      },
-                      {
-                        Icon: Clock,
-                        label: "Траење",
-                        value: selectedEvent.duration,
-                      },
-                      {
-                        Icon: User,
-                        label: "Инструктор",
-                        value: selectedEvent.instructor,
-                      },
-                      {
-                        Icon: GraduationCap,
-                        label: "Формат",
-                        value: selectedEvent.format,
-                      },
-                    ].map(({ Icon, label, value }) => (
-                      <div key={label} className="flex items-start gap-3">
-                        <Icon
-                          className="w-5 h-5 text-[#008081] flex-shrink-0 mt-0.5"
-                          aria-hidden="true"
-                        />
-                        <div>
-                          <p className="text-xs font-medium text-[#1E424A]/60 mb-0.5">
-                            {label}
-                          </p>
-                          <p className="text-sm font-semibold text-[#1E424A]">
-                            {value}
-                          </p>
-                        </div>
-                      </div>
-                    ))}
+                    >
+                      <ChevronRight className="w-5 h-5 text-[#1E424A]" />
+                    </button>
                   </div>
-                  <Link
-                    href={selectedEvent.registrationUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="w-full bg-[#008081] hover:bg-[#006566] text-white font-bold py-3 px-6 rounded-lg transition-colors shadow-md text-lg text-center"
-                  >
-                    Пријави се
-                  </Link>
                 </div>
-              ) : (
-                <p className="text-sm text-[#1E424A]/60">
-                  Избери датум од календарот за да ги видиш деталите.
-                </p>
-              )}
+
+                <div className="space-y-1">
+                  {/* Day headers */}
+                  <div className="grid grid-cols-7 gap-1 mb-2">
+                    {["Нед", "Пон", "Вто", "Сре", "Чет", "Пет", "Саб"].map(
+                      (d) => (
+                        <div
+                          key={d}
+                          className="text-center text-xs font-semibold text-[#1E424A]/60 py-2"
+                        >
+                          {d}
+                        </div>
+                      ),
+                    )}
+                  </div>
+
+                  {/* Weeks */}
+                  {calendarWeeks.map((week, wi) => {
+                    const weekEvents = activeMonth
+                      ? getEventsForWeek(
+                          week,
+                          monthSessions,
+                          activeMonth.month,
+                          activeMonth.year,
+                        )
+                      : [];
+                    const weekHeight = Math.max(
+                      100,
+                      34 + weekEvents.length * 22,
+                    );
+                    return (
+                      <div key={wi} className="relative mb-1">
+                        <div
+                          className="grid grid-cols-7 gap-1"
+                          style={{ minHeight: weekHeight }}
+                        >
+                          {week.map((day, di) => (
+                            <div
+                              key={di}
+                              className={cn(
+                                "relative rounded-lg border",
+                                !day
+                                  ? "bg-transparent border-transparent"
+                                  : "bg-white border-[#1E424A]/10",
+                              )}
+                              style={{ minHeight: weekHeight }}
+                            >
+                              {day && (
+                                <div className="absolute top-1.5 left-2 text-sm font-medium text-[#1E424A] z-10">
+                                  {day}
+                                </div>
+                              )}
+                            </div>
+                          ))}
+                        </div>
+
+                        {/* Event bars overlay */}
+                        {weekEvents.length > 0 && (
+                          <div className="absolute inset-0 pointer-events-none">
+                            {weekEvents.map((ev, ei) => {
+                              const color = getEventColor(ev.session, ei);
+                              return (
+                                <button
+                                  key={ev.session.id}
+                                  onClick={() => setSelectedEvent(ev.session)}
+                                  className="pointer-events-auto cursor-pointer hover:opacity-75 transition-opacity text-left truncate rounded"
+                                  style={{
+                                    position: "absolute",
+                                    left: `calc(${ev.startCol} / 7 * 100% + ${ev.startCol} * 0.25rem)`,
+                                    right: `calc((6 - ${ev.endCol}) / 7 * 100% + (6 - ${ev.endCol}) * 0.25rem)`,
+                                    top: `${28 + ei * 20}px`,
+                                    height: 18,
+                                    background: color.bg,
+                                    color: color.text,
+                                    fontSize: 11,
+                                    fontWeight: 500,
+                                    padding: "1px 6px",
+                                    whiteSpace: "nowrap",
+                                    overflow: "hidden",
+                                    border: "none",
+                                  }}
+                                >
+                                  {ev.session.title}
+                                </button>
+                              );
+                            })}
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Event detail panel */}
+              <div className="bg-white border-2 border-[#1E424A]/10 rounded-2xl p-6 shadow-lg">
+                <h3 className="text-xl font-bold text-[#1E424A] mb-5">
+                  Детали за припремата
+                </h3>
+                {selectedEvent ? (
+                  <div className="space-y-4">
+                    <span className="inline-block px-3 py-1 bg-[#FACC0B]/20 text-[#1E424A] text-xs font-bold rounded">
+                      {selectedEvent.faculty}
+                    </span>
+                    <h4 className="text-2xl font-bold text-[#1E424A]">
+                      {selectedEvent.title}
+                    </h4>
+                    <p className="text-sm text-[#1E424A]/70 leading-relaxed">
+                      {selectedEvent.description}
+                    </p>
+                    <div className="space-y-3 py-4 border-t border-b border-[#1E424A]/10">
+                      {[
+                        {
+                          Icon: CalendarIcon,
+                          label: "Датум",
+                          value: selectedEvent.dateRange,
+                        },
+                        {
+                          Icon: Clock,
+                          label: "Траење",
+                          value: selectedEvent.duration,
+                        },
+                        {
+                          Icon: User,
+                          label: "Инструктор",
+                          value: selectedEvent.instructor,
+                        },
+                        {
+                          Icon: GraduationCap,
+                          label: "Формат",
+                          value: selectedEvent.format,
+                        },
+                      ].map(({ Icon, label, value }) => (
+                        <div key={label} className="flex items-start gap-3">
+                          <Icon
+                            className="w-5 h-5 text-[#008081] flex-shrink-0 mt-0.5"
+                            aria-hidden="true"
+                          />
+                          <div>
+                            <p className="text-xs font-medium text-[#1E424A]/60 mb-0.5">
+                              {label}
+                            </p>
+                            <p className="text-sm font-semibold text-[#1E424A]">
+                              {value}
+                            </p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                    <Link
+                      href={selectedEvent.registrationUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      data-analytics-subject={selectedEvent.title}
+                      data-analytics-cta="booking"
+                      className="w-full bg-[#008081] hover:bg-[#006566] text-white font-bold py-3 px-6 rounded-lg transition-colors shadow-md text-lg text-center"
+                    >
+                      Пријави се
+                    </Link>
+                  </div>
+                ) : (
+                  <p className="text-sm text-[#1E424A]/60">
+                    Избери датум од календарот за да ги видиш деталите.
+                  </p>
+                )}
+              </div>
             </div>
-          </div>
           )}
         </div>
       </div>

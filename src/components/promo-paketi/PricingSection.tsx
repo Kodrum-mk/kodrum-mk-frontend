@@ -83,7 +83,10 @@ export function PricingSection() {
   }, []);
 
   return (
-    <section className="py-16 px-4 sm:px-6 lg:px-8 bg-white w-full">
+    <section
+      data-analytics-section="pricing"
+      className="py-16 px-4 sm:px-6 lg:px-8 bg-white w-full"
+    >
       <div className="max-w-7xl mx-auto">
         {errorMessage && (
           <div className="mb-6 rounded-lg border border-[#FACC0B]/50 bg-[#FACC0B]/15 px-4 py-3 text-sm text-[#1E424A]">
@@ -91,111 +94,131 @@ export function PricingSection() {
           </div>
         )}
         <div className="mx-auto grid w-full max-w-[920px] grid-cols-1 justify-items-center gap-8 md:grid-cols-2">
-          {isLoading ? Array.from({ length: 3 }).map((_, index) => (
-            <PromoCardSkeleton key={index} />
-          )) : cards.map((card, index) => {
-            const Icon = getCardIcon(index, card);
-            const NoteIcon = getNoteIcon(card.noteText);
-            const isCenteredLastCard =
-              cards.length > 1 && cards.length % 2 === 1 && index === cards.length - 1;
-            const savingsAmount = formatSavingsAmount(card.savings);
+          {isLoading
+            ? Array.from({ length: 3 }).map((_, index) => (
+                <PromoCardSkeleton key={index} />
+              ))
+            : cards.map((card, index) => {
+                const Icon = getCardIcon(index, card);
+                const NoteIcon = getNoteIcon(card.noteText);
+                const isCenteredLastCard =
+                  cards.length > 1 &&
+                  cards.length % 2 === 1 &&
+                  index === cards.length - 1;
+                const savingsAmount = formatSavingsAmount(card.savings);
 
-            return (
-              <Link
-                key={card.id}
-                href={card.registrationUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className={`w-full max-w-[430px] bg-white rounded-xl shadow-md p-8 flex flex-col hover:shadow-xl transition-shadow ${
-                  isCenteredLastCard ? "md:col-span-2" : ""
-                } ${
-                  card.featured
-                    ? "border-2 border-[#008081] lg:scale-105"
-                    : "border border-[#1E424A]/10"
-                }`}
-              >
-              {card.badge && (
-                <div className="mb-6">
-                  <span className="inline-block bg-[#FACC0B] text-[#1E424A] px-4 py-1.5 rounded-lg text-sm font-bold">
-                    {card.badge}
-                  </span>
-                </div>
-              )}
-              {!card.badge && <div className="mb-6 mt-11" />}
+                return (
+                  <Link
+                    key={card.id}
+                    href={card.registrationUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    data-analytics-cta="booking"
+                    className={`w-full max-w-[430px] bg-white rounded-xl shadow-md p-8 flex flex-col hover:shadow-xl transition-shadow ${
+                      isCenteredLastCard ? "md:col-span-2" : ""
+                    } ${
+                      card.featured
+                        ? "border-2 border-[#008081] lg:scale-105"
+                        : "border border-[#1E424A]/10"
+                    }`}
+                  >
+                    {card.badge && (
+                      <div className="mb-6">
+                        <span className="inline-block bg-[#FACC0B] text-[#1E424A] px-4 py-1.5 rounded-lg text-sm font-bold">
+                          {card.badge}
+                        </span>
+                      </div>
+                    )}
+                    {!card.badge && <div className="mb-6 mt-11" />}
 
-              <div className="mb-6">
-                <div className="w-16 h-16 rounded-full bg-[#008081]/10 flex items-center justify-center">
-                  <Icon className="w-8 h-8 text-[#008081]" />
-                </div>
-              </div>
+                    <div className="mb-6">
+                      <div className="w-16 h-16 rounded-full bg-[#008081]/10 flex items-center justify-center">
+                        <Icon className="w-8 h-8 text-[#008081]" />
+                      </div>
+                    </div>
 
-              <h3 className="text-xl font-bold text-[#1E424A] mb-3">
-                {card.title}
-              </h3>
-              <p className="text-base text-[#1E424A]/70 mb-6 leading-relaxed">
-                {card.description}
-              </p>
+                    <h3 className="text-xl font-bold text-[#1E424A] mb-3">
+                      {card.title}
+                    </h3>
+                    <p className="text-base text-[#1E424A]/70 mb-6 leading-relaxed">
+                      {card.description}
+                    </p>
 
-              {/* Price */}
-              <div className="bg-[#F2F0E7] rounded-lg p-6 mb-6 border-2 border-[#FACC0B]/60 text-center">
-                <div className="mb-3 text-xl font-extrabold uppercase tracking-wide text-[#1E424A]">
-                  Заштеди:
-                </div>
-                <div className="inline-flex flex-col items-center rounded-lg bg-[#FACC0B] px-8 py-4 text-[#1E424A] shadow-sm">
-                  <span className="text-5xl font-black leading-none">
-                    {savingsAmount}
-                  </span>
-                  <span className="text-base font-extrabold uppercase tracking-wide">
-                    денари
-                  </span>
-                </div>
-              </div>
+                    {/* Price */}
+                    <div className="bg-[#F2F0E7] rounded-lg p-6 mb-6 border-2 border-[#FACC0B]/60 text-center">
+                      <div className="mb-3 text-xl font-extrabold uppercase tracking-wide text-[#1E424A]">
+                        Заштеди:
+                      </div>
+                      <div className="inline-flex flex-col items-center rounded-lg bg-[#FACC0B] px-8 py-4 text-[#1E424A] shadow-sm">
+                        <span className="text-5xl font-black leading-none">
+                          {savingsAmount}
+                        </span>
+                        <span className="text-base font-extrabold uppercase tracking-wide">
+                          денари
+                        </span>
+                      </div>
+                    </div>
 
-              {/* Courses */}
-              <div className="mb-6">
-                <h4 className="text-sm font-bold text-[#1E424A] mb-3">
-                  Вклучени припреми:
-                </h4>
-                <ul className="space-y-2">
-                  {card.courses.map((c) => (
-                    <li key={c} className="flex items-start gap-2 text-sm text-[#1E424A]/70">
-                      <Check className="w-4 h-4 text-[#008081] mt-0.5 flex-shrink-0" aria-hidden="true" />
-                      <span>{c}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
+                    {/* Courses */}
+                    <div className="mb-6">
+                      <h4 className="text-sm font-bold text-[#1E424A] mb-3">
+                        Вклучени припреми:
+                      </h4>
+                      <ul className="space-y-2">
+                        {card.courses.map((c) => (
+                          <li
+                            key={c}
+                            className="flex items-start gap-2 text-sm text-[#1E424A]/70"
+                          >
+                            <Check
+                              className="w-4 h-4 text-[#008081] mt-0.5 flex-shrink-0"
+                              aria-hidden="true"
+                            />
+                            <span>{c}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
 
-              {/* Includes */}
-              <div className="mb-6 flex-grow">
-                <h4 className="text-sm font-bold text-[#1E424A] mb-3">
-                  Што е вклучено:
-                </h4>
-                <ul className="space-y-2">
-                  {card.includes.map((item) => (
-                    <li key={item} className="flex items-start gap-2 text-sm text-[#1E424A]/70">
-                      <Check className="w-4 h-4 text-[#008081] mt-0.5 flex-shrink-0" aria-hidden="true" />
-                      <span>{item}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
+                    {/* Includes */}
+                    <div className="mb-6 flex-grow">
+                      <h4 className="text-sm font-bold text-[#1E424A] mb-3">
+                        Што е вклучено:
+                      </h4>
+                      <ul className="space-y-2">
+                        {card.includes.map((item) => (
+                          <li
+                            key={item}
+                            className="flex items-start gap-2 text-sm text-[#1E424A]/70"
+                          >
+                            <Check
+                              className="w-4 h-4 text-[#008081] mt-0.5 flex-shrink-0"
+                              aria-hidden="true"
+                            />
+                            <span>{item}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
 
-              {card.noteText && NoteIcon && (
-                <div className="bg-[#FACC0B]/10 border border-[#FACC0B]/30 rounded-lg p-3 mb-6 flex items-center gap-2">
-                  <NoteIcon className="w-4 h-4 text-[#1E424A] flex-shrink-0" aria-hidden="true" />
-                  <span className="text-sm text-[#1E424A] font-medium">
-                    {card.noteText}
-                  </span>
-                </div>
-              )}
+                    {card.noteText && NoteIcon && (
+                      <div className="bg-[#FACC0B]/10 border border-[#FACC0B]/30 rounded-lg p-3 mb-6 flex items-center gap-2">
+                        <NoteIcon
+                          className="w-4 h-4 text-[#1E424A] flex-shrink-0"
+                          aria-hidden="true"
+                        />
+                        <span className="text-sm text-[#1E424A] font-medium">
+                          {card.noteText}
+                        </span>
+                      </div>
+                    )}
 
-              <div className="w-full bg-[#008081] hover:bg-[#006566] text-white font-medium py-3 px-6 rounded-lg transition-colors shadow-sm text-sm mt-auto text-center">
-                Само пријави се!
-              </div>
-              </Link>
-            );
-          })}
+                    <div className="w-full bg-[#008081] hover:bg-[#006566] text-white font-medium py-3 px-6 rounded-lg transition-colors shadow-sm text-sm mt-auto text-center">
+                      Само пријави се!
+                    </div>
+                  </Link>
+                );
+              })}
         </div>
       </div>
     </section>

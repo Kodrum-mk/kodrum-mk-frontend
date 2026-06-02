@@ -5,9 +5,12 @@ import "./globals.css";
 import { Navbar } from "@/components/shared/Navbar";
 import { Footer } from "@/components/shared/Footer";
 import { GoogleAnalytics } from "@/components/shared/GoogleAnalytics";
+import { AnalyticsEvents } from "@/components/shared/AnalyticsEvents";
+import { CookieNotice } from "@/components/shared/CookieNotice";
 
 const inter = Inter({ subsets: ["latin"] });
-const gaMeasurementId = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID;
+const gaMeasurementId =
+  process.env.NEXT_PUBLIC_GA_ID ?? process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID;
 
 export const metadata: Metadata = {
   title: {
@@ -16,7 +19,15 @@ export const metadata: Metadata = {
   },
   description:
     "Сега е вистинско време да завршите со испитите и да уживате во летото без стрес! 😎🌴 За студенти од ФИНКИ, ФЕИТ, МФС и Економски.",
-  keywords: ["кодрум", "испити", "подготовка", "ФИНКИ", "ФЕИТ", "студенти", "курсеви"],
+  keywords: [
+    "кодрум",
+    "испити",
+    "подготовка",
+    "ФИНКИ",
+    "ФЕИТ",
+    "студенти",
+    "курсеви",
+  ],
   openGraph: {
     siteName: "Кодрум",
     locale: "mk_MK",
@@ -43,6 +54,7 @@ export default function RootLayout({
             <GoogleAnalytics measurementId={gaMeasurementId} />
           </Suspense>
         )}
+        <AnalyticsEvents />
         <a
           href="#main-content"
           className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-50 focus:px-4 focus:py-2 focus:bg-[#008081] focus:text-white focus:rounded-lg"
@@ -52,6 +64,7 @@ export default function RootLayout({
         <Navbar />
         <main id="main-content">{children}</main>
         <Footer />
+        <CookieNotice />
       </body>
     </html>
   );

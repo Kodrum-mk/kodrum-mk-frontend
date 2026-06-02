@@ -32,7 +32,7 @@ export function CookieNotice() {
     <div className="fixed inset-x-4 bottom-4 z-50 mx-auto max-w-3xl rounded-lg border border-[#1E424A]/10 bg-white px-4 py-3 text-[#1E424A] shadow-lg">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <p className="text-sm leading-relaxed">
-          Користиме аналитика за да разбереме посети и да ја подобриме услугата.{" "}
+          Овој сајт користи колачиња и собира податоци за аналитика.{" "}
           <Link
             href="/privatnost"
             className="font-semibold text-[#008081] hover:text-[#006566]"

@@ -190,19 +190,22 @@ function getRegistrationNotice(session: PrepSession) {
     case 3:
       return {
         text: "Уште 3 дена за пријавување",
-        cardClass: "border-[#FACC0B] ring-2 ring-[#FACC0B]/30",
+        cardClass:
+          "border-transparent outline outline-2 outline-offset-2 outline-[#FACC0B]",
         badgeClass: "bg-[#FACC0B]/20 text-[#1E424A] border-[#FACC0B]/60",
       };
     case 2:
       return {
         text: "Уште 2 дена за пријавување",
-        cardClass: "border-[#FB923C] ring-2 ring-[#FB923C]/25",
+        cardClass:
+          "border-transparent outline outline-2 outline-offset-2 outline-[#FB923C]",
         badgeClass: "bg-[#FB923C]/15 text-[#9A3412] border-[#FB923C]/60",
       };
     case 1:
       return {
         text: "Последна шанса за пријавување",
-        cardClass: "border-[#DC2626] ring-2 ring-[#DC2626]/25",
+        cardClass:
+          "border-transparent outline outline-2 outline-offset-2 outline-[#DC2626]",
         badgeClass: "bg-[#DC2626]/10 text-[#991B1B] border-[#DC2626]/50",
       };
     default:

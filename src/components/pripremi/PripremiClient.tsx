@@ -20,7 +20,7 @@ import { PrepPrice } from "./PrepPrice";
 
 function SessionCardSkeleton() {
   return (
-    <div className="bg-white border-2 border-[#1E424A]/10 rounded-2xl p-6 shadow-lg h-[540px] animate-pulse">
+    <div className="bg-white border-2 border-[#1E424A]/10 rounded-2xl p-6 shadow-lg min-h-[540px] animate-pulse">
       <div className="flex items-center justify-between mb-4">
         <div className="h-6 w-28 rounded-full bg-[#008081]/10" />
         <div className="h-6 w-20 rounded bg-[#FACC0B]/20" />
@@ -476,7 +476,7 @@ export function PripremiClient() {
                     data-analytics-subject={session.title}
                     data-analytics-cta="booking"
                     className={cn(
-                      "bg-white border-2 border-[#1E424A]/10 rounded-2xl p-6 shadow-lg hover:shadow-xl transition-shadow flex flex-col h-[540px]",
+                      "bg-white border-2 border-[#1E424A]/10 rounded-2xl p-6 shadow-lg hover:shadow-xl transition-shadow flex flex-col min-h-[540px]",
                       notice?.cardClass,
                     )}
                   >

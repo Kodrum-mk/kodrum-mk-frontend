@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Calendar, ChevronRight } from "lucide-react";
+import { Calendar, ChevronRight, Users } from "lucide-react";
 import { loadPrepSessions } from "@/data/prepSessionsApi";
 
 const bullets = [
@@ -10,6 +10,19 @@ const bullets = [
   "Обично се одвива во неколку дена, зависно од предметот",
   "Фокусот е на решавање испитни задачи и практична подготовка",
 ];
+
+function formatSpots(spotsLeft: number) {
+  if (spotsLeft === 0) return "Нема слободни места";
+  if (spotsLeft === 1) return "Последно слободно место";
+  if (spotsLeft <= 3) return `Последни ${spotsLeft} слободни места`;
+  return `${spotsLeft} слободни места`;
+}
+
+function getSpotsClass(spotsLeft: number) {
+  if (spotsLeft <= 1) return "text-[#DC2626]";
+  if (spotsLeft <= 3) return "text-[#EA580C]";
+  return "text-[#D4A400]";
+}
 
 export async function PrepSection() {
   const { sessions } = await loadPrepSessions();
@@ -77,6 +90,12 @@ export async function PrepSection() {
                       <div className="flex flex-wrap gap-1.5">
                         <span className="text-xs font-medium px-2 py-0.5 bg-[#008081]/10 text-[#008081] rounded">
                           {prep.faculty}
+                        </span>
+                        <span
+                          className={`inline-flex items-center gap-1 text-xs font-semibold px-2 py-0.5 bg-[#1E424A]/5 rounded ${getSpotsClass(prep.spotsLeft)}`}
+                        >
+                          <Users className="h-3 w-3" aria-hidden="true" />
+                          {formatSpots(prep.spotsLeft)}
                         </span>
                       </div>
                     </div>

@@ -6,6 +6,7 @@ import {
   Search,
   Calendar as CalendarIcon,
   User,
+  Users,
   Clock,
   GraduationCap,
   ChevronLeft,
@@ -19,7 +20,7 @@ import { PrepPrice } from "./PrepPrice";
 
 function SessionCardSkeleton() {
   return (
-    <div className="bg-white border-2 border-[#1E424A]/10 rounded-2xl p-6 shadow-lg h-[480px] animate-pulse">
+    <div className="bg-white border-2 border-[#1E424A]/10 rounded-2xl p-6 shadow-lg h-[540px] animate-pulse">
       <div className="flex items-center justify-between mb-4">
         <div className="h-6 w-28 rounded-full bg-[#008081]/10" />
         <div className="h-6 w-20 rounded bg-[#FACC0B]/20" />
@@ -163,8 +164,65 @@ function getEventsForWeek(
 
 function parseIsoDate(value?: string) {
   if (!value) return null;
-  const parsed = new Date(value);
+  const parts = value.split("-").map(Number);
+  const parsed =
+    parts.length === 3 && parts.every(Number.isFinite)
+      ? new Date(parts[0], parts[1] - 1, parts[2])
+      : new Date(value);
   return Number.isNaN(parsed.getTime()) ? null : parsed;
+}
+
+function startOfLocalDay(date: Date) {
+  return new Date(date.getFullYear(), date.getMonth(), date.getDate());
+}
+
+function getRegistrationNotice(session: PrepSession) {
+  const start = parseIsoDate(session.startDateIso);
+  if (!start) return null;
+
+  const today = startOfLocalDay(new Date());
+  const startDay = startOfLocalDay(start);
+  const daysUntilStart = Math.round(
+    (startDay.getTime() - today.getTime()) / 86_400_000,
+  );
+
+  switch (daysUntilStart) {
+    case 3:
+      return {
+        text: "Уште 3 дена за пријавување",
+        cardClass: "border-[#FACC0B] ring-2 ring-[#FACC0B]/30",
+        badgeClass: "bg-[#FACC0B]/20 text-[#1E424A] border-[#FACC0B]/60",
+      };
+    case 2:
+      return {
+        text: "Уште 2 дена за пријавување",
+        cardClass: "border-[#FB923C] ring-2 ring-[#FB923C]/25",
+        badgeClass: "bg-[#FB923C]/15 text-[#9A3412] border-[#FB923C]/60",
+      };
+    case 1:
+      return {
+        text: "Последна шанса за пријавување",
+        cardClass: "border-[#DC2626] ring-2 ring-[#DC2626]/25",
+        badgeClass: "bg-[#DC2626]/10 text-[#991B1B] border-[#DC2626]/50",
+      };
+    default:
+      return null;
+  }
+}
+
+function formatSpots(session: PrepSession) {
+  if (session.spotsLeft === 0) return "Нема слободни места";
+  if (session.spotsLeft === 1) return "Последно слободно место";
+  if (session.spotsLeft <= 3) {
+    return `Последни ${session.spotsLeft} слободни места`;
+  }
+  return `${session.spotsLeft} слободни места`;
+}
+
+function getSpotsClass(spotsLeft: number) {
+  if (spotsLeft <= 1) return "text-[#DC2626]";
+  if (spotsLeft <= 3) return "text-[#EA580C]";
+  return "text-[#D4A400]";
 }
 
 function toMonthKey(year: number, month: number) {
@@ -309,6 +367,9 @@ export function PripremiClient() {
 
   const activeMonth =
     availableMonths.find((month) => month.key === selectedMonthKey) ?? null;
+  const selectedEventNotice = selectedEvent
+    ? getRegistrationNotice(selectedEvent)
+    : null;
 
   const calendarWeeks = useMemo(() => {
     if (!activeMonth) return [];
@@ -399,68 +460,104 @@ export function PripremiClient() {
             </p>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {filtered.map((session) => (
-                <Link
-                  key={session.id}
-                  href={session.registrationUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  data-analytics-subject={session.title}
-                  data-analytics-cta="booking"
-                  className="bg-white border-2 border-[#1E424A]/10 rounded-2xl p-6 shadow-lg hover:shadow-xl transition-shadow flex flex-col h-[520px]"
-                >
-                  <div className="flex items-center justify-between mb-4">
-                    <span className="px-3 py-1 bg-[#008081]/10 text-[#008081] text-xs font-medium rounded-full">
-                      {session.status}
-                    </span>
-                    <span className="px-3 py-1 bg-[#FACC0B]/20 text-[#1E424A] text-xs font-bold rounded">
-                      {session.faculty}
-                    </span>
-                  </div>
-                  <h3 className="text-xl font-bold text-[#1E424A] mb-2">
-                    {session.title}
-                  </h3>
-                  <p className="text-sm text-[#1E424A]/70 mb-4 leading-relaxed">
-                    {session.description}
-                  </p>
-                  <div className="space-y-2 mb-5 pb-5 border-b border-[#1E424A]/10 flex-grow">
-                    {[
-                      {
-                        Icon: User,
-                        label: "Инструктор",
-                        value: session.instructor,
-                      },
-                      {
-                        Icon: CalendarIcon,
-                        label: "Почнува",
-                        value: session.startDate,
-                      },
-                      { Icon: Clock, label: "Траење", value: session.duration },
-                      {
-                        Icon: GraduationCap,
-                        label: "Ниво",
-                        value: session.level,
-                      },
-                    ].map(({ Icon, label, value }) => (
+              {filtered.map((session) => {
+                const notice = getRegistrationNotice(session);
+                const spotsLabel = formatSpots(session);
+
+                return (
+                  <Link
+                    key={session.id}
+                    href={session.registrationUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    data-analytics-subject={session.title}
+                    data-analytics-cta="booking"
+                    className={cn(
+                      "bg-white border-2 border-[#1E424A]/10 rounded-2xl p-6 shadow-lg hover:shadow-xl transition-shadow flex flex-col h-[540px]",
+                      notice?.cardClass,
+                    )}
+                  >
+                    <div className="flex items-center justify-between mb-4">
+                      <span className="px-3 py-1 bg-[#008081]/10 text-[#008081] text-xs font-medium rounded-full">
+                        {session.status}
+                      </span>
+                      <span className="px-3 py-1 bg-[#FACC0B]/20 text-[#1E424A] text-xs font-bold rounded">
+                        {session.faculty}
+                      </span>
+                    </div>
+                    {notice && (
                       <div
-                        key={label}
-                        className="flex items-center gap-2 text-sm text-[#1E424A]/80"
+                        className={cn(
+                          "mb-3 rounded-lg border px-3 py-2 text-xs font-bold",
+                          notice.badgeClass,
+                        )}
                       >
-                        <Icon
-                          className="w-4 h-4 text-[#008081] flex-shrink-0"
-                          aria-hidden="true"
-                        />
-                        <span className="font-medium">{label}:</span>
-                        <span className="truncate">{value}</span>
+                        {notice.text}
                       </div>
-                    ))}
-                  </div>
-                  <PrepPrice price={session.price} className="mt-auto mb-3" />
-                  <div className="w-full bg-[#008081] hover:bg-[#006566] text-white font-bold py-3 px-6 rounded-lg transition-colors shadow-md text-lg text-center">
-                    Пријави се
-                  </div>
-                </Link>
-              ))}
+                    )}
+                    <h3 className="text-xl font-bold text-[#1E424A] mb-2">
+                      {session.title}
+                    </h3>
+                    <p className="text-sm text-[#1E424A]/70 mb-4 leading-relaxed">
+                      {session.description}
+                    </p>
+                    <div className="space-y-2 mb-5 pb-5 border-b border-[#1E424A]/10 flex-grow">
+                      {[
+                        {
+                          Icon: User,
+                          label: "Инструктор",
+                          value: session.instructor,
+                        },
+                        {
+                          Icon: CalendarIcon,
+                          label: "Почнува",
+                          value: session.startDate,
+                        },
+                        {
+                          Icon: Clock,
+                          label: "Траење",
+                          value: session.duration,
+                        },
+                        {
+                          Icon: GraduationCap,
+                          label: "Ниво",
+                          value: session.level,
+                        },
+                      ]
+                        .filter((item) => item.value !== null)
+                        .map(({ Icon, label, value }) => (
+                          <div
+                            key={label}
+                            className="flex items-center gap-2 text-sm text-[#1E424A]/80"
+                          >
+                            <Icon
+                              className="w-4 h-4 text-[#008081] flex-shrink-0"
+                              aria-hidden="true"
+                            />
+                            <span className="font-medium">{label}:</span>
+                            <span className="truncate">{value}</span>
+                          </div>
+                        ))}
+                    </div>
+                    <div
+                      className={cn(
+                        "mb-3 mt-auto flex items-center gap-2 text-lg font-bold",
+                        getSpotsClass(session.spotsLeft),
+                      )}
+                    >
+                      <Users
+                        className="h-5 w-5"
+                        aria-hidden="true"
+                      />
+                      {spotsLabel}
+                    </div>
+                    <PrepPrice price={session.price} className="mb-3" />
+                    <div className="w-full bg-[#008081] hover:bg-[#006566] text-white font-bold py-3 px-6 rounded-lg transition-colors shadow-md text-lg text-center">
+                      Пријави се
+                    </div>
+                  </Link>
+                );
+              })}
             </div>
           )}
         </div>
@@ -625,9 +722,21 @@ export function PripremiClient() {
                 </h3>
                 {selectedEvent ? (
                   <div className="space-y-4">
-                    <span className="inline-block px-3 py-1 bg-[#FACC0B]/20 text-[#1E424A] text-xs font-bold rounded">
-                      {selectedEvent.faculty}
-                    </span>
+                    <div className="flex flex-wrap gap-2">
+                      <span className="inline-block px-3 py-1 bg-[#FACC0B]/20 text-[#1E424A] text-xs font-bold rounded">
+                        {selectedEvent.faculty}
+                      </span>
+                      {selectedEventNotice && (
+                        <span
+                          className={cn(
+                            "inline-block rounded border px-3 py-1 text-xs font-bold",
+                            selectedEventNotice.badgeClass,
+                          )}
+                        >
+                          {selectedEventNotice.text}
+                        </span>
+                      )}
+                    </div>
                     <h4 className="text-2xl font-bold text-[#1E424A]">
                       {selectedEvent.title}
                     </h4>
@@ -652,26 +761,33 @@ export function PripremiClient() {
                           value: selectedEvent.instructor,
                         },
                         {
+                          Icon: Users,
+                          label: "Места",
+                          value: formatSpots(selectedEvent),
+                        },
+                        {
                           Icon: GraduationCap,
                           label: "Формат",
                           value: selectedEvent.format,
                         },
-                      ].map(({ Icon, label, value }) => (
-                        <div key={label} className="flex items-start gap-3">
-                          <Icon
-                            className="w-5 h-5 text-[#008081] flex-shrink-0 mt-0.5"
-                            aria-hidden="true"
-                          />
-                          <div>
-                            <p className="text-xs font-medium text-[#1E424A]/60 mb-0.5">
-                              {label}
-                            </p>
-                            <p className="text-sm font-semibold text-[#1E424A]">
-                              {value}
-                            </p>
+                      ]
+                        .filter((item) => item.value !== null)
+                        .map(({ Icon, label, value }) => (
+                          <div key={label} className="flex items-start gap-3">
+                            <Icon
+                              className="w-5 h-5 text-[#008081] flex-shrink-0 mt-0.5"
+                              aria-hidden="true"
+                            />
+                            <div>
+                              <p className="text-xs font-medium text-[#1E424A]/60 mb-0.5">
+                                {label}
+                              </p>
+                              <p className="text-sm font-semibold text-[#1E424A]">
+                                {value}
+                              </p>
+                            </div>
                           </div>
-                        </div>
-                      ))}
+                        ))}
                     </div>
                     <Link
                       href={selectedEvent.registrationUrl}

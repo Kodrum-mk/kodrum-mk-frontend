@@ -10,6 +10,7 @@ const PREP_SESSIONS_QUERY =
   "populate[faculty][fields][0]=name&populate[faculty][fields][1]=slug&populate[faculty][fields][2]=shortCode&populate[faculty][fields][3]=color" +
   "&populate[instructor][fields][0]=name&populate[instructor][fields][1]=slug&populate[instructor][fields][2]=title&populate[instructor][fields][3]=bio" +
   "&sort=startDate:asc&pagination[page]=1&pagination[pageSize]=25&pagination[withCount]=true";
+const NO_MORE_REGISTRATIONS_STATUS = "Нема повеќе пријавувања";
 
 type StrapiListResponse<T> = {
   data?: T[];
@@ -26,6 +27,8 @@ type StrapiEntity = {
   dateRange?: string;
   duration?: string;
   price?: number;
+  spotsLeft?: number;
+  totalSpots?: number;
   level?: string;
   status?: string;
   registrationStatus?: string;
@@ -54,7 +57,10 @@ export type PrepSessionsLoadResult = {
   errorMessage?: string;
 };
 
-function getEntityField<T>(entity: StrapiEntity | StrapiRelation, key: string): T | undefined {
+function getEntityField<T>(
+  entity: StrapiEntity | StrapiRelation,
+  key: string,
+): T | undefined {
   if (!entity) return undefined;
   const direct = (entity as Record<string, unknown>)[key] as T | undefined;
   if (direct !== undefined) return direct;
@@ -91,7 +97,11 @@ function deriveCalendarDates(startDate?: string, endDate?: string): number[] {
   if (!startDate || !endDate) return [];
   const start = new Date(startDate);
   const end = new Date(endDate);
-  if (Number.isNaN(start.getTime()) || Number.isNaN(end.getTime()) || end < start) {
+  if (
+    Number.isNaN(start.getTime()) ||
+    Number.isNaN(end.getTime()) ||
+    end < start
+  ) {
     return [];
   }
 
@@ -175,6 +185,57 @@ function normalizePrice(price: unknown): number | undefined {
   return Number.isFinite(parsed) && parsed > 0 ? Math.round(parsed) : undefined;
 }
 
+function normalizeSpotsLeft(spotsLeft: unknown): number {
+  const parsed = Number(spotsLeft);
+  return Number.isFinite(parsed) && parsed >= 0 ? Math.round(parsed) : 7;
+}
+
+function normalizeTotalSpots(totalSpots: unknown): number {
+  const parsed = Number(totalSpots);
+  return Number.isFinite(parsed) && parsed > 0 ? Math.round(parsed) : 10;
+}
+
+function parseIsoDateLocal(value?: string) {
+  if (!value) return null;
+  const parts = value.split("-").map(Number);
+  const parsed =
+    parts.length === 3 && parts.every(Number.isFinite)
+      ? new Date(parts[0], parts[1] - 1, parts[2])
+      : new Date(value);
+  return Number.isNaN(parsed.getTime()) ? null : parsed;
+}
+
+function startOfLocalDay(date: Date) {
+  return new Date(date.getFullYear(), date.getMonth(), date.getDate());
+}
+
+function applyPrepSessionDateRules(sessions: PrepSession[]): PrepSession[] {
+  const today = startOfLocalDay(new Date());
+
+  return sessions
+    .filter((session) => {
+      const end = parseIsoDateLocal(session.endDateIso ?? session.startDateIso);
+      return !end || startOfLocalDay(end) >= today;
+    })
+    .map((session) => {
+      const start = parseIsoDateLocal(session.startDateIso);
+      const end = parseIsoDateLocal(session.endDateIso ?? session.startDateIso);
+
+      if (!start || !end) return session;
+
+      const startDay = startOfLocalDay(start);
+      const endDay = startOfLocalDay(end);
+      if (startDay <= today && today <= endDay) {
+        return {
+          ...session,
+          status: NO_MORE_REGISTRATIONS_STATUS,
+        };
+      }
+
+      return session;
+    });
+}
+
 function normalizePrepSession(entity: StrapiEntity): PrepSession | null {
   const relationFaculty = getRelationEntity(entity.faculty ?? null);
   const relationInstructor = getRelationEntity(entity.instructor ?? null);
@@ -183,7 +244,16 @@ function normalizePrepSession(entity: StrapiEntity): PrepSession | null {
   const description = getEntityField<string>(entity, "description")?.trim();
   const duration = getEntityField<string>(entity, "duration")?.trim();
   const price = normalizePrice(getEntityField<number>(entity, "price"));
-  const registrationUrl = getEntityField<string>(entity, "registrationUrl")?.trim();
+  const spotsLeft = normalizeSpotsLeft(
+    getEntityField<number>(entity, "spotsLeft"),
+  );
+  const totalSpots = normalizeTotalSpots(
+    getEntityField<number>(entity, "totalSpots"),
+  );
+  const registrationUrl = getEntityField<string>(
+    entity,
+    "registrationUrl",
+  )?.trim();
 
   if (!title || !description || !duration) return null;
 
@@ -196,12 +266,13 @@ function normalizePrepSession(entity: StrapiEntity): PrepSession | null {
   const documentId = getEntityField<string>(entity, "documentId");
   const numericId = getEntityField<number>(entity, "id");
 
-  const facultyName = getEntityField<string>(relationFaculty, "shortCode")
-    || getEntityField<string>(relationFaculty, "name")
-    || "Непознат факултет";
+  const facultyName =
+    getEntityField<string>(relationFaculty, "shortCode") ||
+    getEntityField<string>(relationFaculty, "name") ||
+    "Непознат факултет";
 
-  const instructorName = getEntityField<string>(relationInstructor, "name")
-    || "Непознат инструктор";
+  const instructorName =
+    getEntityField<string>(relationInstructor, "name") || "Непознат инструктор";
 
   const startDateLabel = startDateIso ? toMkDateLabel(startDateIso) : "";
 
@@ -219,18 +290,21 @@ function normalizePrepSession(entity: StrapiEntity): PrepSession | null {
       : deriveDateRange(startDateIso, endDateIso) || startDateLabel,
     duration,
     price,
+    spotsLeft,
+    totalSpots,
     level: mapLevel(getEntityField<string>(entity, "level")),
     status: mapStatus(
-      getEntityField<string>(entity, "status")
-        ?? getEntityField<string>(entity, "registrationStatus"),
+      getEntityField<string>(entity, "status") ??
+        getEntityField<string>(entity, "registrationStatus"),
     ),
     format: mapFormat(getEntityField<string>(entity, "format")),
     registrationUrl:
-      registrationUrl
-      || "https://docs.google.com/forms/d/e/1FAIpQLScxb4pyK4RWKZ3HyDqeyJkUacK7od1odn5UPO3tKNbLYCjagQ/viewform?usp=send_form",
-    calendarDates: calendarDates.length > 0
-      ? calendarDates
-      : deriveCalendarDates(startDateIso, endDateIso),
+      registrationUrl ||
+      "https://docs.google.com/forms/d/e/1FAIpQLScxb4pyK4RWKZ3HyDqeyJkUacK7od1odn5UPO3tKNbLYCjagQ/viewform?usp=send_form",
+    calendarDates:
+      calendarDates.length > 0
+        ? calendarDates
+        : deriveCalendarDates(startDateIso, endDateIso),
   };
 }
 
@@ -248,7 +322,9 @@ export function getPrepDataSourcePreference(): "strapi" | "mock" {
   return PREP_SOURCE === "mock" ? "mock" : "strapi";
 }
 
-export async function fetchPrepSessionsFromStrapi(signal?: AbortSignal): Promise<PrepSession[]> {
+export async function fetchPrepSessionsFromStrapi(
+  signal?: AbortSignal,
+): Promise<PrepSession[]> {
   const url = `${STRAPI_BASE_URL}/prep-sessions?${PREP_SESSIONS_QUERY}`;
   const response = await fetch(url, {
     method: "GET",
@@ -268,13 +344,15 @@ export async function fetchPrepSessionsFromStrapi(signal?: AbortSignal): Promise
     throw new Error("Strapi returned no valid prep sessions");
   }
 
-  return sessions;
+  return applyPrepSessionDateRules(sessions);
 }
 
-export async function loadPrepSessions(signal?: AbortSignal): Promise<PrepSessionsLoadResult> {
+export async function loadPrepSessions(
+  signal?: AbortSignal,
+): Promise<PrepSessionsLoadResult> {
   if (getPrepDataSourcePreference() === "mock") {
     return {
-      sessions: fallbackPrepSessions,
+      sessions: applyPrepSessionDateRules(fallbackPrepSessions),
       source: "fallback",
     };
   }
@@ -288,7 +366,7 @@ export async function loadPrepSessions(signal?: AbortSignal): Promise<PrepSessio
   } catch (error) {
     if (error instanceof DOMException && error.name === "AbortError") {
       return {
-        sessions: fallbackPrepSessions,
+        sessions: applyPrepSessionDateRules(fallbackPrepSessions),
         source: "fallback",
         errorMessage:
           "Вчитувањето на CMS податоците истече. Прикажуваме резервна верзија.",
@@ -304,7 +382,7 @@ export async function loadPrepSessions(signal?: AbortSignal): Promise<PrepSessio
     }
 
     return {
-      sessions: fallbackPrepSessions,
+      sessions: applyPrepSessionDateRules(fallbackPrepSessions),
       source: "fallback",
       errorMessage:
         "Не можевме да ги вчитаме најновите податоци од CMS. Прикажуваме резервна верзија.",

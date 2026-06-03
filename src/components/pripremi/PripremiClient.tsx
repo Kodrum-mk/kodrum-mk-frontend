@@ -88,7 +88,7 @@ function getDaysInMonth(month: number, year: number) {
 }
 
 function getFirstDayOfMonth(month: number, year: number) {
-  return new Date(year, month, 1).getDay();
+  return (new Date(year, month, 1).getDay() + 6) % 7;
 }
 
 function buildCalendarWeeks(month: number, year: number): (number | null)[][] {
@@ -120,10 +120,21 @@ const defaultEventPalette = [
   { bg: "rgba(168, 85, 247, 0.15)", text: "#A855F7" },
 ];
 
-function getEventColor(session: PrepSession, index: number) {
+function getStableEventColorIndex(session: PrepSession) {
+  const key = `${session.id}-${session.title}`;
+  let hash = 0;
+
+  for (let index = 0; index < key.length; index++) {
+    hash = (hash * 31 + key.charCodeAt(index)) % defaultEventPalette.length;
+  }
+
+  return hash;
+}
+
+function getEventColor(session: PrepSession) {
   return (
     eventColors[session.id] ??
-    defaultEventPalette[index % defaultEventPalette.length]
+    defaultEventPalette[getStableEventColorIndex(session)]
   );
 }
 
@@ -177,14 +188,7 @@ function startOfLocalDay(date: Date) {
 }
 
 function getRegistrationNotice(session: PrepSession) {
-  const start = parseIsoDate(session.startDateIso);
-  if (!start) return null;
-
-  const today = startOfLocalDay(new Date());
-  const startDay = startOfLocalDay(start);
-  const daysUntilStart = Math.round(
-    (startDay.getTime() - today.getTime()) / 86_400_000,
-  );
+  const daysUntilStart = getDaysUntilStart(session);
 
   switch (daysUntilStart) {
     case 3:
@@ -211,6 +215,20 @@ function getRegistrationNotice(session: PrepSession) {
     default:
       return null;
   }
+}
+
+function getDaysUntilStart(session: PrepSession) {
+  const start = parseIsoDate(session.startDateIso);
+  if (!start) return Number.POSITIVE_INFINITY;
+  const today = startOfLocalDay(new Date());
+  const startDay = startOfLocalDay(start);
+  return Math.round((startDay.getTime() - today.getTime()) / 86_400_000);
+}
+
+function getUrgencyRank(session: PrepSession) {
+  const daysUntilStart = getDaysUntilStart(session);
+  if (daysUntilStart >= 1 && daysUntilStart <= 3) return daysUntilStart;
+  return Number.POSITIVE_INFINITY;
 }
 
 function formatSpots(session: PrepSession) {
@@ -331,14 +349,20 @@ export function PripremiClient() {
     }
   }, [activeFilter, filters]);
 
-  const filtered = sessions.filter((s) => {
-    const matchesQuery =
-      s.title.toLowerCase().includes(query.toLowerCase()) ||
-      s.faculty.toLowerCase().includes(query.toLowerCase());
-    const matchesFilter =
-      activeFilter === "Сите Припреми" || s.faculty === activeFilter;
-    return matchesQuery && matchesFilter;
-  });
+  const filtered = sessions
+    .filter((s) => {
+      const matchesQuery =
+        s.title.toLowerCase().includes(query.toLowerCase()) ||
+        s.faculty.toLowerCase().includes(query.toLowerCase());
+      const matchesFilter =
+        activeFilter === "Сите Припреми" || s.faculty === activeFilter;
+      return matchesQuery && matchesFilter;
+    })
+    .sort((a, b) => {
+      const urgencyDiff = getUrgencyRank(a) - getUrgencyRank(b);
+      if (urgencyDiff !== 0) return urgencyDiff;
+      return getDaysUntilStart(a) - getDaysUntilStart(b);
+    });
 
   const availableMonths = useMemo(() => {
     const monthMap = new Map<
@@ -628,7 +652,7 @@ export function PripremiClient() {
                 <div className="space-y-1">
                   {/* Day headers */}
                   <div className="grid grid-cols-7 gap-1 mb-2">
-                    {["Нед", "Пон", "Вто", "Сре", "Чет", "Пет", "Саб"].map(
+                    {["Пон", "Вто", "Сре", "Чет", "Пет", "Саб", "Нед"].map(
                       (d) => (
                         <div
                           key={d}
@@ -684,26 +708,34 @@ export function PripremiClient() {
                         {weekEvents.length > 0 && (
                           <div className="absolute inset-0 pointer-events-none">
                             {weekEvents.map((ev, ei) => {
-                              const color = getEventColor(ev.session, ei);
+                              const color = getEventColor(ev.session);
+                              const isSelected =
+                                selectedEvent?.id === ev.session.id;
                               return (
                                 <button
                                   key={ev.session.id}
                                   onClick={() => setSelectedEvent(ev.session)}
-                                  className="pointer-events-auto cursor-pointer hover:opacity-75 transition-opacity text-left truncate rounded"
+                                  aria-pressed={isSelected}
+                                  className="pointer-events-auto cursor-pointer hover:opacity-85 transition-opacity text-left truncate rounded"
                                   style={{
                                     position: "absolute",
                                     left: `calc(${ev.startCol} / 7 * 100% + ${ev.startCol} * 0.25rem)`,
                                     right: `calc((6 - ${ev.endCol}) / 7 * 100% + (6 - ${ev.endCol}) * 0.25rem)`,
                                     top: `${28 + ei * 20}px`,
                                     height: 18,
-                                    background: color.bg,
-                                    color: color.text,
+                                    background: isSelected
+                                      ? color.text
+                                      : color.bg,
+                                    color: isSelected ? "#FFFFFF" : color.text,
                                     fontSize: 11,
-                                    fontWeight: 500,
+                                    fontWeight: isSelected ? 700 : 500,
                                     padding: "1px 6px",
                                     whiteSpace: "nowrap",
                                     overflow: "hidden",
                                     border: "none",
+                                    boxShadow: isSelected
+                                      ? `0 0 0 2px ${color.text}`
+                                      : "none",
                                   }}
                                 >
                                   {ev.session.title}

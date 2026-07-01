@@ -27,7 +27,7 @@ export const promoPackages: PromoPackage[] = [
     featured: true,
     title: "Математика + Програмирање пакет",
     description: "Силна основа во математика и програмирање",
-    originalPrice: "78,000 МКД",
+    originalPrice: "7,800 МКД",
     discount: "-20%",
     savings: "Заштеди до 2,000 МКД",
     courses: ["Калкулус/Математика 1", "Структурно програмирање"],

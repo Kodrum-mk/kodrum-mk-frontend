@@ -13,7 +13,7 @@ function formatMkd(price: number) {
 }
 
 export function PrepPrice({ price, compact = false, className }: PrepPriceProps) {
-  if (!price) return null;
+  if (price == null) return null;
 
   const originalPrice = price + DISCOUNT_AMOUNT;
 

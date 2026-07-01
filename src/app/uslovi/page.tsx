@@ -56,6 +56,7 @@ export default function UsloviPage() {
         <h1 className="text-4xl md:text-5xl font-bold text-[#1E424A] mb-4">
           Услови за користење
         </h1>
+        {/* Update this date when the policy content changes */}
         <p className="text-sm text-[#1E424A]/50 mb-10">
           Последно ажурирање: Јануари 2025
         </p>

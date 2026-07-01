@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next/link";
+import type { FormEvent } from "react";
 import { useEffect, useMemo, useState } from "react";
 import {
   Search,
@@ -17,6 +17,30 @@ import { loadPrepSessions } from "@/data/prepSessionsApi";
 import type { PrepSession } from "@/types";
 import { cn } from "@/utils/cn";
 import { PrepPrice } from "./PrepPrice";
+
+type SignupFormState = {
+  ime: string;
+  prezime: string;
+  email: string;
+  telefon: string;
+  discordUsername: string;
+  attendancePreference: "online" | "physical";
+  poraka: string;
+};
+
+const emptySignupForm: SignupFormState = {
+  ime: "",
+  prezime: "",
+  email: "",
+  telefon: "",
+  discordUsername: "",
+  attendancePreference: "physical",
+  poraka: "",
+};
+
+function isValidEmail(email: string) {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+}
 
 function SessionCardSkeleton() {
   return (
@@ -244,9 +268,7 @@ function getSpotsClass(spotsLeft: number) {
   if (spotsLeft <= 1) return "text-[#DC2626]";
   if (spotsLeft <= 3) return "text-[#EA580C]";
   return "text-[#D4A400]";
-}
-
-function toMonthKey(year: number, month: number) {
+}function toMonthKey(year: number, month: number) {
   return `${year}-${String(month + 1).padStart(2, "0")}`;
 }
 
@@ -254,7 +276,7 @@ function formatMonthLabel(year: number, month: number) {
   const label = new Intl.DateTimeFormat("mk-MK", {
     month: "long",
     year: "numeric",
-  }).format(new Date(year, month, 1));
+  }).format(new Date(year, month, 1)).replace(" г.", "");
   return label.charAt(0).toUpperCase() + label.slice(1);
 }
 
@@ -310,19 +332,28 @@ export function PripremiClient() {
   const [query, setQuery] = useState("");
   const [activeFilter, setActiveFilter] = useState("Сите Припреми");
   const [selectedEvent, setSelectedEvent] = useState<PrepSession | null>(null);
-  const [selectedMonthKey, setSelectedMonthKey] = useState("");
+
   const [isLoading, setIsLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isFallbackData, setIsFallbackData] = useState(false);
+  const [signupSession, setSignupSession] = useState<PrepSession | null>(null);
+  const [signupForm, setSignupForm] =
+    useState<SignupFormState>(emptySignupForm);
+  const [isSignupSubmitting, setIsSignupSubmitting] = useState(false);
+  const [signupStatus, setSignupStatus] = useState<{
+    type: "success" | "error";
+    message: string;
+  } | null>(null);
 
   useEffect(() => {
+    let isMounted = true;
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 8000);
 
     const run = async () => {
       setIsLoading(true);
       const result = await loadPrepSessions(controller.signal);
-      if (controller.signal.aborted) return;
+      if (!isMounted) return;
 
       setSessions(result.sessions);
       setErrorMessage(result.errorMessage ?? null);
@@ -333,6 +364,7 @@ export function PripremiClient() {
     void run();
 
     return () => {
+      isMounted = false;
       clearTimeout(timeoutId);
       controller.abort();
     };
@@ -349,20 +381,22 @@ export function PripremiClient() {
     }
   }, [activeFilter, filters]);
 
-  const filtered = sessions
-    .filter((s) => {
-      const matchesQuery =
-        s.title.toLowerCase().includes(query.toLowerCase()) ||
-        s.faculty.toLowerCase().includes(query.toLowerCase());
-      const matchesFilter =
-        activeFilter === "Сите Припреми" || s.faculty === activeFilter;
-      return matchesQuery && matchesFilter;
-    })
-    .sort((a, b) => {
-      const urgencyDiff = getUrgencyRank(a) - getUrgencyRank(b);
-      if (urgencyDiff !== 0) return urgencyDiff;
-      return getDaysUntilStart(a) - getDaysUntilStart(b);
-    });
+  const filtered = useMemo(() => {
+    return sessions
+      .filter((s) => {
+        const matchesQuery =
+          s.title.toLowerCase().includes(query.toLowerCase()) ||
+          s.faculty.toLowerCase().includes(query.toLowerCase());
+        const matchesFilter =
+          activeFilter === "Сите Припреми" || s.faculty === activeFilter;
+        return matchesQuery && matchesFilter;
+      })
+      .sort((a, b) => {
+        const urgencyDiff = getUrgencyRank(a) - getUrgencyRank(b);
+        if (urgencyDiff !== 0) return urgencyDiff;
+        return getDaysUntilStart(a) - getDaysUntilStart(b);
+      });
+  }, [sessions, query, activeFilter]);
 
   const availableMonths = useMemo(() => {
     const monthMap = new Map<
@@ -381,38 +415,9 @@ export function PripremiClient() {
     );
   }, [filtered]);
 
-  useEffect(() => {
-    if (!availableMonths.length) {
-      setSelectedMonthKey("");
-      return;
-    }
-
-    if (!availableMonths.some((month) => month.key === selectedMonthKey)) {
-      setSelectedMonthKey(availableMonths[0].key);
-    }
-  }, [availableMonths, selectedMonthKey]);
-
-  const activeMonth =
-    availableMonths.find((month) => month.key === selectedMonthKey) ?? null;
   const selectedEventNotice = selectedEvent
     ? getRegistrationNotice(selectedEvent)
     : null;
-
-  const calendarWeeks = useMemo(() => {
-    if (!activeMonth) return [];
-    return buildCalendarWeeks(activeMonth.month, activeMonth.year);
-  }, [activeMonth]);
-
-  const monthSessions = useMemo(() => {
-    if (!activeMonth) return [];
-    return filtered.filter((session) =>
-      getSessionRangeForMonth(session, activeMonth.month, activeMonth.year),
-    );
-  }, [activeMonth, filtered]);
-
-  const activeMonthIndex = activeMonth
-    ? availableMonths.findIndex((month) => month.key === activeMonth.key)
-    : -1;
 
   useEffect(() => {
     if (
@@ -422,6 +427,100 @@ export function PripremiClient() {
       setSelectedEvent(filtered[0] ?? null);
     }
   }, [filtered, selectedEvent]);
+
+  function openSignup(session: PrepSession) {
+    setSignupSession(session);
+    setSignupStatus(null);
+    document.body.style.overflow = "hidden";
+  }
+
+  function closeSignup() {
+    if (isSignupSubmitting) return;
+    setSignupSession(null);
+    setSignupStatus(null);
+    document.body.style.overflow = "";
+  }
+
+  useEffect(() => {
+    function handleKeyDown(event: KeyboardEvent) {
+      if (event.key === "Escape" && signupSession) {
+        closeSignup();
+      }
+    }
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [signupSession, isSignupSubmitting]);
+
+  function updateSignupField<K extends keyof SignupFormState>(
+    key: K,
+    value: SignupFormState[K],
+  ) {
+    setSignupForm((current) => ({ ...current, [key]: value }));
+  }
+
+  async function submitSignup(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (!signupSession) return;
+
+    setIsSignupSubmitting(true);
+    setSignupStatus(null);
+
+    try {
+      if (!isValidEmail(signupForm.email)) {
+        throw new Error("Внесете валиден email.");
+      }
+
+      if (signupForm.attendancePreference === "online" && !signupForm.discordUsername.trim()) {
+        throw new Error("Discord корисничко име е задолжително за онлајн припреми.");
+      }
+
+      const response = await fetch("/api/applications", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          ...signupForm,
+          prepSessionId: signupSession.prepSessionId,
+          subjectId: signupSession.subjectId ?? signupSession.id,
+          subjectName: signupSession.title,
+          prepSessionTitle: signupSession.title,
+          faculty: signupSession.faculty,
+          attendancePreference: signupForm.attendancePreference,
+          attendanceText: `${
+            signupForm.attendancePreference === "online"
+              ? "онлајн"
+              : "физичко присуство"
+          }, ${signupSession.startDate}`,
+          coursePrice: String(signupSession.price ?? 2500),
+          poraka: [
+            signupForm.poraka,
+            `Припрема: ${signupSession.title}`,
+            `Факултет: ${signupSession.faculty}`,
+          ]
+            .filter(Boolean)
+            .join("\n"),
+        }),
+      });
+      const payload = (await response.json()) as { error?: string };
+
+      if (!response.ok) {
+        throw new Error(payload.error || "Неуспешно зачувување.");
+      }
+
+      setSignupForm(emptySignupForm);
+      setSignupStatus({
+        type: "success",
+        message: "Пријавата е испратена.",
+      });
+    } catch (error) {
+      setSignupStatus({
+        type: "error",
+        message:
+          error instanceof Error ? error.message : "Неуспешно зачувување.",
+      });
+    } finally {
+      setIsSignupSubmitting(false);
+    }
+  }
 
   return (
     <>
@@ -492,11 +591,8 @@ export function PripremiClient() {
                 const spotsLabel = formatSpots(session);
 
                 return (
-                  <Link
+                  <article
                     key={session.id}
-                    href={session.registrationUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
                     data-analytics-subject={session.title}
                     data-analytics-cta="booking"
                     className={cn(
@@ -551,18 +647,31 @@ export function PripremiClient() {
                           value: session.level,
                         },
                       ]
-                        .filter((item) => item.value !== null)
+                        .filter((item) => item.value != null)
                         .map(({ Icon, label, value }) => (
                           <div
                             key={label}
-                            className="flex items-center gap-2 text-sm text-[#1E424A]/80"
+                            className="flex items-start gap-2 text-sm text-[#1E424A]/80"
                           >
                             <Icon
-                              className="w-4 h-4 text-[#008081] flex-shrink-0"
+                              className="w-4 h-4 text-[#008081] flex-shrink-0 mt-0.5"
                               aria-hidden="true"
                             />
-                            <span className="font-medium">{label}:</span>
-                            <span className="truncate">{value}</span>
+                            {label === "Инструктор" && typeof value === "string" && value.includes(",") ? (
+                              <div>
+                                <span className="font-medium block">Инструктори:</span>
+                                <ul className="list-disc pl-4 mt-1 space-y-0.5">
+                                  {value.split(",").map((v) => (
+                                    <li key={v.trim()}>{v.trim()}</li>
+                                  ))}
+                                </ul>
+                              </div>
+                            ) : (
+                              <div className="flex items-center gap-2 overflow-hidden mt-0.5">
+                                <span className="font-medium flex-shrink-0">{label}:</span>
+                                <span className="truncate">{value}</span>
+                              </div>
+                            )}
                           </div>
                         ))}
                     </div>
@@ -579,10 +688,14 @@ export function PripremiClient() {
                       {spotsLabel}
                     </div>
                     <PrepPrice price={session.price} className="mb-3" />
-                    <div className="w-full bg-[#008081] hover:bg-[#006566] text-white font-bold py-3 px-6 rounded-lg transition-colors shadow-md text-lg text-center">
+                    <button
+                      type="button"
+                      onClick={() => openSignup(session)}
+                      className="w-full bg-[#008081] hover:bg-[#006566] text-white font-bold py-3 px-6 rounded-lg transition-colors shadow-md text-lg text-center"
+                    >
                       Пријави се
-                    </div>
-                  </Link>
+                    </button>
+                  </article>
                 );
               })}
             </div>
@@ -605,153 +718,132 @@ export function PripremiClient() {
           {isLoading ? (
             <CalendarSkeleton />
           ) : (
-            <div className="grid grid-cols-1 lg:grid-cols-[60%_40%] gap-8">
-              {/* Calendar */}
-              <div className="bg-white border-2 border-[#1E424A]/10 rounded-2xl p-6 shadow-lg">
-                <div className="flex items-center justify-between mb-6">
-                  <h3 className="text-2xl font-bold text-[#1E424A]">
-                    {activeMonth?.label ?? "Нема датум"}
-                  </h3>
-                  <div className="flex gap-2">
-                    <button
-                      type="button"
-                      onClick={() => {
-                        if (activeMonthIndex > 0) {
-                          setSelectedMonthKey(
-                            availableMonths[activeMonthIndex - 1].key,
-                          );
-                        }
-                      }}
-                      className="p-2 rounded-lg border border-[#1E424A]/20 hover:bg-[#008081]/10 transition-colors"
-                      aria-label="Previous month"
-                      disabled={activeMonthIndex <= 0}
-                    >
-                      <ChevronLeft className="w-5 h-5 text-[#1E424A]" />
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        if (activeMonthIndex < availableMonths.length - 1) {
-                          setSelectedMonthKey(
-                            availableMonths[activeMonthIndex + 1].key,
-                          );
-                        }
-                      }}
-                      className="p-2 rounded-lg border border-[#1E424A]/20 hover:bg-[#008081]/10 transition-colors"
-                      aria-label="Next month"
-                      disabled={
-                        activeMonthIndex === -1 ||
-                        activeMonthIndex >= availableMonths.length - 1
-                      }
-                    >
-                      <ChevronRight className="w-5 h-5 text-[#1E424A]" />
-                    </button>
+            <div className="grid grid-cols-1 lg:grid-cols-[60%_40%] gap-8 items-start">
+              {/* Calendars */}
+              <div className="space-y-8">
+                {availableMonths.length === 0 && (
+                  <div className="bg-white border-2 border-[#1E424A]/10 rounded-2xl p-6 shadow-lg text-center text-[#1E424A]/70">
+                    Нема закажано припреми за овој период.
                   </div>
-                </div>
+                )}
+                {availableMonths.map((monthData) => {
+                  const monthSessions = filtered.filter((session) =>
+                    getSessionRangeForMonth(session, monthData.month, monthData.year)
+                  );
+                  const calendarWeeks = buildCalendarWeeks(monthData.month, monthData.year);
+                  
+                  return (
+                    <div key={monthData.key} className="bg-white border-2 border-[#1E424A]/10 rounded-2xl p-6 shadow-lg">
+                      <div className="mb-6">
+                        <h3 className="text-2xl font-bold text-[#1E424A]">
+                          {monthData.label}
+                        </h3>
+                      </div>
 
-                <div className="space-y-1">
-                  {/* Day headers */}
-                  <div className="grid grid-cols-7 gap-1 mb-2">
-                    {["Пон", "Вто", "Сре", "Чет", "Пет", "Саб", "Нед"].map(
-                      (d) => (
-                        <div
-                          key={d}
-                          className="text-center text-xs font-semibold text-[#1E424A]/60 py-2"
-                        >
-                          {d}
+                      <div className="space-y-1">
+                        {/* Day headers */}
+                        <div className="grid grid-cols-7 gap-1 mb-2">
+                          {["Пон", "Вто", "Сре", "Чет", "Пет", "Саб", "Нед"].map(
+                            (d) => (
+                              <div
+                                key={d}
+                                className="text-center text-xs font-semibold text-[#1E424A]/60 py-2"
+                              >
+                                {d}
+                              </div>
+                            ),
+                          )}
                         </div>
-                      ),
-                    )}
-                  </div>
 
-                  {/* Weeks */}
-                  {calendarWeeks.map((week, wi) => {
-                    const weekEvents = activeMonth
-                      ? getEventsForWeek(
-                          week,
-                          monthSessions,
-                          activeMonth.month,
-                          activeMonth.year,
-                        )
-                      : [];
-                    const weekHeight = Math.max(
-                      100,
-                      34 + weekEvents.length * 22,
-                    );
-                    return (
-                      <div key={wi} className="relative mb-1">
-                        <div
-                          className="grid grid-cols-7 gap-1"
-                          style={{ minHeight: weekHeight }}
-                        >
-                          {week.map((day, di) => (
-                            <div
-                              key={di}
-                              className={cn(
-                                "relative rounded-lg border",
-                                !day
-                                  ? "bg-transparent border-transparent"
-                                  : "bg-white border-[#1E424A]/10",
-                              )}
-                              style={{ minHeight: weekHeight }}
-                            >
-                              {day && (
-                                <div className="absolute top-1.5 left-2 text-sm font-medium text-[#1E424A] z-10">
-                                  {day}
+                        {/* Weeks */}
+                        {calendarWeeks.map((week, wi) => {
+                          const weekEvents = getEventsForWeek(
+                            week,
+                            monthSessions,
+                            monthData.month,
+                            monthData.year,
+                          );
+                          const weekHeight = Math.max(
+                            100,
+                            34 + weekEvents.length * 22,
+                          );
+                          return (
+                            <div key={wi} className="relative mb-1">
+                              <div
+                                className="grid grid-cols-7 gap-1"
+                                style={{ minHeight: weekHeight }}
+                              >
+                                {week.map((day, di) => (
+                                  <div
+                                    key={di}
+                                    className={cn(
+                                      "relative rounded-lg border",
+                                      !day
+                                        ? "bg-transparent border-transparent"
+                                        : "bg-white border-[#1E424A]/10",
+                                    )}
+                                    style={{ minHeight: weekHeight }}
+                                  >
+                                    {day && (
+                                      <div className="absolute top-1.5 left-2 text-sm font-medium text-[#1E424A] z-10">
+                                        {day}
+                                      </div>
+                                    )}
+                                  </div>
+                                ))}
+                              </div>
+
+                              {/* Event bars overlay */}
+                              {weekEvents.length > 0 && (
+                                <div className="absolute inset-0 pointer-events-none">
+                                  {weekEvents.map((ev, ei) => {
+                                    const color = getEventColor(ev.session);
+                                    const isSelected =
+                                      selectedEvent?.id === ev.session.id;
+                                    return (
+                                      <button
+                                        key={ev.session.id}
+                                        onClick={() => setSelectedEvent(ev.session)}
+                                        aria-pressed={isSelected}
+                                        className="pointer-events-auto cursor-pointer hover:opacity-85 transition-opacity text-left truncate rounded"
+                                        style={{
+                                          position: "absolute",
+                                          left: `calc(${ev.startCol} / 7 * 100% + ${ev.startCol} * 0.25rem)`,
+                                          right: `calc((6 - ${ev.endCol}) / 7 * 100% + (6 - ${ev.endCol}) * 0.25rem)`,
+                                          top: `${28 + ei * 20}px`,
+                                          height: 18,
+                                          background: isSelected
+                                            ? color.text
+                                            : color.bg,
+                                          color: isSelected ? "#FFFFFF" : color.text,
+                                          fontSize: 11,
+                                          fontWeight: isSelected ? 700 : 500,
+                                          padding: "1px 6px",
+                                          whiteSpace: "nowrap",
+                                          overflow: "hidden",
+                                          border: "none",
+                                          boxShadow: isSelected
+                                            ? `0 0 0 2px ${color.text}`
+                                            : "none",
+                                        }}
+                                      >
+                                        {ev.session.title}
+                                      </button>
+                                    );
+                                  })}
                                 </div>
                               )}
                             </div>
-                          ))}
-                        </div>
-
-                        {/* Event bars overlay */}
-                        {weekEvents.length > 0 && (
-                          <div className="absolute inset-0 pointer-events-none">
-                            {weekEvents.map((ev, ei) => {
-                              const color = getEventColor(ev.session);
-                              const isSelected =
-                                selectedEvent?.id === ev.session.id;
-                              return (
-                                <button
-                                  key={ev.session.id}
-                                  onClick={() => setSelectedEvent(ev.session)}
-                                  aria-pressed={isSelected}
-                                  className="pointer-events-auto cursor-pointer hover:opacity-85 transition-opacity text-left truncate rounded"
-                                  style={{
-                                    position: "absolute",
-                                    left: `calc(${ev.startCol} / 7 * 100% + ${ev.startCol} * 0.25rem)`,
-                                    right: `calc((6 - ${ev.endCol}) / 7 * 100% + (6 - ${ev.endCol}) * 0.25rem)`,
-                                    top: `${28 + ei * 20}px`,
-                                    height: 18,
-                                    background: isSelected
-                                      ? color.text
-                                      : color.bg,
-                                    color: isSelected ? "#FFFFFF" : color.text,
-                                    fontSize: 11,
-                                    fontWeight: isSelected ? 700 : 500,
-                                    padding: "1px 6px",
-                                    whiteSpace: "nowrap",
-                                    overflow: "hidden",
-                                    border: "none",
-                                    boxShadow: isSelected
-                                      ? `0 0 0 2px ${color.text}`
-                                      : "none",
-                                  }}
-                                >
-                                  {ev.session.title}
-                                </button>
-                              );
-                            })}
-                          </div>
-                        )}
+                          );
+                        })}
                       </div>
-                    );
-                  })}
-                </div>
+                    </div>
+                  );
+                })}
               </div>
 
               {/* Event detail panel */}
-              <div className="bg-white border-2 border-[#1E424A]/10 rounded-2xl p-6 shadow-lg">
+              <div className="bg-white border-2 border-[#1E424A]/10 rounded-2xl p-6 shadow-lg sticky top-28 h-fit">
                 <h3 className="text-xl font-bold text-[#1E424A] mb-5">
                   Детали за припремата
                 </h3>
@@ -773,7 +865,7 @@ export function PripremiClient() {
                       )}
                     </div>
                     <h4 className="text-2xl font-bold text-[#1E424A]">
-                      {selectedEvent.title}
+                      {selectedEvent.title} - {selectedEvent.price} МКД
                     </h4>
                     <p className="text-sm text-[#1E424A]/70 leading-relaxed">
                       {selectedEvent.description}
@@ -783,7 +875,7 @@ export function PripremiClient() {
                         {
                           Icon: CalendarIcon,
                           label: "Датум",
-                          value: selectedEvent.dateRange,
+                          value: selectedEvent.startDate,
                         },
                         {
                           Icon: Clock,
@@ -806,7 +898,7 @@ export function PripremiClient() {
                           value: selectedEvent.format,
                         },
                       ]
-                        .filter((item) => item.value !== null)
+                        .filter((item) => item.value != null)
                         .map(({ Icon, label, value }) => (
                           <div key={label} className="flex items-start gap-3">
                             <Icon
@@ -815,25 +907,32 @@ export function PripremiClient() {
                             />
                             <div>
                               <p className="text-xs font-medium text-[#1E424A]/60 mb-0.5">
-                                {label}
+                                {label === "Инструктор" && typeof value === "string" && value.includes(",") ? "Инструктори" : label}
                               </p>
-                              <p className="text-sm font-semibold text-[#1E424A]">
-                                {value}
-                              </p>
+                              {label === "Инструктор" && typeof value === "string" && value.includes(",") ? (
+                                <ul className="list-disc pl-4 text-sm font-semibold text-[#1E424A] space-y-0.5 mt-1">
+                                  {value.split(",").map((v) => (
+                                    <li key={v.trim()}>{v.trim()}</li>
+                                  ))}
+                                </ul>
+                              ) : (
+                                <p className="text-sm font-semibold text-[#1E424A]">
+                                  {value}
+                                </p>
+                              )}
                             </div>
                           </div>
                         ))}
                     </div>
-                    <Link
-                      href={selectedEvent.registrationUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
+                    <button
+                      type="button"
+                      onClick={() => openSignup(selectedEvent)}
                       data-analytics-subject={selectedEvent.title}
                       data-analytics-cta="booking"
                       className="w-full bg-[#008081] hover:bg-[#006566] text-white font-bold py-3 px-6 rounded-lg transition-colors shadow-md text-lg text-center"
                     >
                       Пријави се
-                    </Link>
+                    </button>
                   </div>
                 ) : (
                   <p className="text-sm text-[#1E424A]/60">
@@ -845,6 +944,211 @@ export function PripremiClient() {
           )}
         </div>
       </div>
+
+      {signupSession && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-[#1E424A]/60 px-4 py-6"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="signup-title"
+        >
+          <div className="w-full max-w-xl rounded-2xl bg-white p-6 shadow-2xl">
+            <div className="mb-5 flex items-start justify-between gap-4">
+              <div>
+                <p className="mb-1 text-sm font-bold text-[#008081]">
+                  {signupSession.faculty}
+                </p>
+                <h2
+                  id="signup-title"
+                  className="text-2xl font-bold text-[#1E424A]"
+                >
+                  {signupSession.title} - {signupSession.price} МКД
+                </h2>
+              </div>
+              <button
+                type="button"
+                onClick={closeSignup}
+                className="rounded-lg border border-[#1E424A]/20 px-3 py-2 text-sm font-bold text-[#1E424A] hover:bg-[#F2F0E7]"
+              >
+                Затвори
+              </button>
+            </div>
+
+            <form className="space-y-4" onSubmit={submitSignup}>
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                <div>
+                  <label
+                    htmlFor="signup-ime"
+                    className="mb-1.5 block text-sm font-medium text-[#1E424A]"
+                  >
+                    Име *
+                  </label>
+                  <input
+                    id="signup-ime"
+                    required
+                    value={signupForm.ime}
+                    onChange={(event) =>
+                      updateSignupField("ime", event.target.value)
+                    }
+                    className="w-full rounded-lg border border-[#1E424A]/20 px-4 py-3 text-sm text-[#1E424A] focus:border-[#008081] focus:outline-none focus:ring-2 focus:ring-[#008081]/20"
+                  />
+                </div>
+                <div>
+                  <label
+                    htmlFor="signup-prezime"
+                    className="mb-1.5 block text-sm font-medium text-[#1E424A]"
+                  >
+                    Презиме *
+                  </label>
+                  <input
+                    id="signup-prezime"
+                    required
+                    value={signupForm.prezime}
+                    onChange={(event) =>
+                      updateSignupField("prezime", event.target.value)
+                    }
+                    className="w-full rounded-lg border border-[#1E424A]/20 px-4 py-3 text-sm text-[#1E424A] focus:border-[#008081] focus:outline-none focus:ring-2 focus:ring-[#008081]/20"
+                  />
+                </div>
+              </div>
+              <div>
+                <label
+                  htmlFor="signup-email"
+                  className="mb-1.5 block text-sm font-medium text-[#1E424A]"
+                >
+                  Email *
+                </label>
+                <input
+                  id="signup-email"
+                  type="email"
+                  required
+                  value={signupForm.email}
+                  onChange={(event) =>
+                    updateSignupField("email", event.target.value)
+                  }
+                  className="w-full rounded-lg border border-[#1E424A]/20 px-4 py-3 text-sm text-[#1E424A] focus:border-[#008081] focus:outline-none focus:ring-2 focus:ring-[#008081]/20"
+                />
+                <p className="mt-2 text-xs text-[#1E424A]/60">
+                  Ќе добиете email со информации за уплата или следни чекори.
+                </p>
+              </div>
+              <div>
+                <label
+                  htmlFor="signup-telefon"
+                  className="mb-1.5 block text-sm font-medium text-[#1E424A]"
+                >
+                  Телефон *
+                </label>
+                <input
+                  id="signup-telefon"
+                  required
+                  value={signupForm.telefon}
+                  onChange={(event) =>
+                    updateSignupField("telefon", event.target.value)
+                  }
+                  className="w-full rounded-lg border border-[#1E424A]/20 px-4 py-3 text-sm text-[#1E424A] focus:border-[#008081] focus:outline-none focus:ring-2 focus:ring-[#008081]/20"
+                />
+                <p className="mt-2 text-xs text-[#1E424A]/60">
+                  Ќе бидете додадени во Viber група по уплатата.
+                </p>
+              </div>
+              <div>
+                <label
+                  className="mb-1.5 block text-sm font-medium text-[#1E424A]"
+                >
+                  Начин на присуство *
+                </label>
+                <div className="grid grid-cols-2 overflow-hidden rounded-lg border border-[#1E424A]/20 bg-white p-1">
+                  {[
+                    { value: "physical", label: "Физичко присуство" },
+                    { value: "online", label: "Онлајн" },
+                  ].map((option) => (
+                    <button
+                      key={option.value}
+                      type="button"
+                      onClick={() =>
+                        setSignupForm((current) => ({
+                          ...current,
+                          attendancePreference:
+                            option.value as "online" | "physical",
+                          discordUsername:
+                            option.value === "online"
+                              ? current.discordUsername
+                              : "",
+                        }))
+                      }
+                      className={cn(
+                        "min-h-11 rounded-md px-3 text-sm font-bold transition-colors",
+                        signupForm.attendancePreference === option.value
+                          ? "bg-[#008081] text-white shadow-sm"
+                          : "bg-transparent text-[#1E424A]/65 hover:bg-[#F2F0E7]",
+                      )}
+                    >
+                      {option.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              {signupForm.attendancePreference === "online" && (
+                <div>
+                  <label
+                    htmlFor="signup-discord"
+                    className="mb-1.5 block text-sm font-medium text-[#1E424A]"
+                  >
+                    Discord username *
+                  </label>
+                  <input
+                    id="signup-discord"
+                    value={signupForm.discordUsername}
+                    onChange={(event) =>
+                      updateSignupField("discordUsername", event.target.value)
+                    }
+                    className="w-full rounded-lg border border-[#1E424A]/20 px-4 py-3 text-sm text-[#1E424A] focus:border-[#008081] focus:outline-none focus:ring-2 focus:ring-[#008081]/20"
+                  />
+                </div>
+              )}
+              <div>
+                <label
+                  htmlFor="signup-poraka"
+                  className="mb-1.5 block text-sm font-medium text-[#1E424A]"
+                >
+                  Белешка
+                </label>
+                <textarea
+                  id="signup-poraka"
+                  rows={3}
+                  value={signupForm.poraka}
+                  onChange={(event) =>
+                    updateSignupField("poraka", event.target.value)
+                  }
+                  className="w-full resize-none rounded-lg border border-[#1E424A]/20 px-4 py-3 text-sm text-[#1E424A] focus:border-[#008081] focus:outline-none focus:ring-2 focus:ring-[#008081]/20"
+                />
+              </div>
+
+              {signupStatus && (
+                <div
+                  className={cn(
+                    "rounded-lg px-4 py-3 text-sm",
+                    signupStatus.type === "success"
+                      ? "bg-[#008081]/10 text-[#1E424A]"
+                      : "bg-[#FACC0B]/15 text-[#1E424A]",
+                  )}
+                >
+                  {signupStatus.message}
+                </div>
+              )}
+
+              <button
+                type="submit"
+                disabled={isSignupSubmitting}
+                className="w-full rounded-lg bg-[#008081] px-6 py-3.5 text-sm font-bold text-white shadow-md transition-colors hover:bg-[#006566] disabled:opacity-70"
+              >
+                {isSignupSubmitting ? "Се зачувува..." : "Испрати пријава"}
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
     </>
   );
 }

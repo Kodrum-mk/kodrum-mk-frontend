@@ -92,6 +92,7 @@ export function Footer() {
             </p>
             
             <div className="flex gap-3">
+              {/* TODO: Replace with actual Kodrum social media URLs */}
               {[
                 {
                   href: "https://facebook.com",
@@ -129,7 +130,7 @@ export function Footer() {
       <div className="border-t border-white/10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-5 flex flex-col sm:flex-row justify-between items-center gap-4">
           <p className="text-white/60 text-sm">
-            © 2025 Kodrum. Сите права се задржани.
+            © {new Date().getFullYear()} Kodrum. Сите права се задржани.
           </p>
           <div className="flex gap-4 text-white/60 text-sm">
             <Link

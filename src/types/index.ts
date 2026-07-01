@@ -15,6 +15,8 @@ export interface Course {
 
 export interface PrepSession {
   id: string;
+  subjectId?: string;
+  prepSessionId?: string;
   title: string;
   description: string;
   faculty: string;
@@ -22,16 +24,12 @@ export interface PrepSession {
   startDateIso?: string;
   endDateIso?: string;
   startDate: string;
-  dateRange: string;
-  duration: string;
+  duration?: string | null;
   price?: number;
   spotsLeft: number;
-  totalSpots: number;
   level: string;
   status: string;
   format: string;
-  calendarDates: number[];
-  registrationUrl: string;
 }
 
 export interface PromoPackage {

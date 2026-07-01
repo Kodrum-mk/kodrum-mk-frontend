@@ -56,6 +56,7 @@ export default function PrivatnostPage() {
         <h1 className="text-4xl md:text-5xl font-bold text-[#1E424A] mb-4">
           Политика за приватност
         </h1>
+        {/* Update this date when the policy content changes */}
         <p className="text-sm text-[#1E424A]/50 mb-10">
           Последно ажурирање: Јануари 2025
         </p>

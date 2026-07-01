@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { rateLimit } from "@/utils/rateLimit";
 
 const TELEGRAM_API_BASE = "https://api.telegram.org";
 
@@ -19,11 +20,16 @@ function truncateMessage(message: string) {
 }
 
 export async function POST(request: Request) {
+  const ip = request.headers.get("x-forwarded-for") || "unknown";
+  if (!rateLimit(ip)) {
+    return NextResponse.json({ error: "Премногу барања. Обидете се повторно подоцна." }, { status: 429 });
+  }
+
   try {
     const botToken = process.env.TELEGRAM_BOT_TOKEN?.trim();
     const chatId = process.env.TELEGRAM_CHAT_ID?.trim();
     const topicId = process.env.TELEGRAM_TOPIC_ID?.trim();
-    const messageThreadId = topicId ? Number(topicId) : undefined;
+    const parsedTopicId = topicId ? Number(topicId) : null;
 
     if (!botToken || !chatId) {
       return NextResponse.json(
@@ -54,7 +60,7 @@ export async function POST(request: Request) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           chat_id: chatId,
-          ...(messageThreadId ? { message_thread_id: messageThreadId } : {}),
+          ...(parsedTopicId != null && !isNaN(parsedTopicId) ? { message_thread_id: parsedTopicId } : {}),
           text: truncateMessage(
             [
               "Нова порака од контакт форма",

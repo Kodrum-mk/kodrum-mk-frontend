@@ -1,7 +1,7 @@
 import type { PromoPackage } from "@/types";
 import { fallbackPromoPackages } from "@/data/promoPackages";
 
-const STRAPI_BASE_URL = `${process.env.NEXT_PUBLIC_STRAPI_URL ?? "http://localhost:1337"}/api`;
+const STRAPI_BASE_URL = `${process.env.STRAPI_URL ?? process.env.NEXT_PUBLIC_STRAPI_URL ?? "http://localhost:1337"}/api`;
 
 type StrapiListResponse<T> = {
   data?: T[];
@@ -86,7 +86,6 @@ export async function loadPromoPackages(signal?: AbortSignal): Promise<PromoPack
   try {
     const response = await fetch(`${STRAPI_BASE_URL}/promo-packages?sort[0]=featured:desc&sort[1]=title:asc`, {
       method: "GET",
-      headers: { "Content-Type": "application/json" },
       cache: "no-store",
       signal,
     });

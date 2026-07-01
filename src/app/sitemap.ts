@@ -13,10 +13,11 @@ export default function sitemap(): MetadataRoute.Sitemap {
     "/privatnost",
     "/uslovi",
   ];
+  const lastModified = new Date("2025-06-01");
 
   return routes.map((route) => ({
     url: `${BASE_URL}${route}`,
-    lastModified: new Date(),
+    lastModified,
     changeFrequency: "weekly" as const,
     priority: route === "" ? 1 : 0.8,
   }));

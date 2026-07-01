@@ -30,4 +30,14 @@
     font-family: var(--font-sans), system-ui, sans-serif;
     -webkit-font-smoothing: antialiased;
   }
+
+  input.amount-input::-webkit-outer-spin-button,
+  input.amount-input::-webkit-inner-spin-button {
+    margin: 0;
+    -webkit-appearance: none;
+  }
+
+  input.amount-input {
+    -moz-appearance: textfield;
+  }
 }

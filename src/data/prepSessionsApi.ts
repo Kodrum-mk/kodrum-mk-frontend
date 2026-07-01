@@ -194,8 +194,9 @@ export async function loadPrepSessions(
 ): Promise<PrepSessionsLoadResult> {
   if (getPrepDataSourcePreference() === "mock") {
     return {
-      sessions: fallbackPrepSessions,
+      sessions: [],
       source: "fallback",
+      errorMessage: "Системот е во тест режим и податоците не се вчитани.",
     };
   }
 
@@ -215,10 +216,10 @@ export async function loadPrepSessions(
     }
 
     return {
-      sessions: fallbackPrepSessions,
-      source: "fallback",
+      sessions: [],
+      source: "strapi",
       errorMessage:
-        "Не можевме да ги вчитаме најновите податоци од CMS. Прикажуваме резервна верзија.",
+        "Податоците моментално се освежуваат или системот се редеплоира. Ве молиме обидете се повторно за неколку минути.",
     };
   }
 }

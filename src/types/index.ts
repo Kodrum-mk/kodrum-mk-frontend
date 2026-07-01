@@ -24,6 +24,7 @@ export interface PrepSession {
   startDateIso?: string;
   endDateIso?: string;
   startDate: string;
+  examDate?: string;
   duration?: string | null;
   price?: number;
   spotsLeft: number;

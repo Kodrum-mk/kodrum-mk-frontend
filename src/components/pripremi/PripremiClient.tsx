@@ -11,6 +11,7 @@ import {
   GraduationCap,
   ChevronLeft,
   ChevronRight,
+  FileText,
 } from "lucide-react";
 import { eventColors } from "@/data/prepSessions";
 import { loadPrepSessions } from "@/data/prepSessionsApi";
@@ -635,6 +636,11 @@ export function PripremiClient() {
                           Icon: CalendarIcon,
                           label: "Почнува",
                           value: session.startDate,
+                        },
+                        {
+                          Icon: FileText,
+                          label: "Испит",
+                          value: session.examDate,
                         },
                         {
                           Icon: Clock,

@@ -29,6 +29,7 @@ type StrapiSubject = {
   name?: string;
   slug?: string;
   startDate?: string;
+  examDate?: string;
   duration?: string;
   price?: number;
   spotsLeft?: number;
@@ -126,6 +127,7 @@ function mapSubjectToPrepSession(
     startDateIso: startDateStr,
     endDateIso,
     startDate: startDateStr ? formatMacedonianDate(startDateStr) : "Непознат датум",
+    examDate: subject.examDate ? formatMacedonianDate(subject.examDate) : undefined,
     duration: durationStr,
     price: subject.price ?? 2500,
     spotsLeft: subject.spotsLeft ?? 10,

@@ -101,7 +101,7 @@ export async function PrepSection() {
                     </div>
                     <div className="text-right flex-shrink-0">
                       <div className="text-xl font-bold text-[#1E424A] whitespace-nowrap">
-                        {prep.dateRange}
+                        {prep.startDate}
                       </div>
                     </div>
                   </div>

@@ -27,6 +27,7 @@ export interface PrepSession {
   duration?: string | null;
   price?: number;
   spotsLeft: number;
+  totalSpots?: number;
   level: string;
   status: string;
   format: string;

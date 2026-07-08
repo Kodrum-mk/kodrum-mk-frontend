@@ -198,7 +198,7 @@ export async function loadPrepSessions(
     return {
       sessions: [],
       source: "fallback",
-      errorMessage: "Системот е во тест режим и податоците не се вчитани.",
+      errorMessage: "System is in mock mode and data has not been loaded.",
     };
   }
 
@@ -221,7 +221,7 @@ export async function loadPrepSessions(
       sessions: [],
       source: "strapi",
       errorMessage:
-        "Податоците моментално се освежуваат или системот се редеплоира. Ве молиме обидете се повторно за неколку минути.",
+        "503 Service Unavailable: Data is currently being refreshed or the system is under maintenance. Please try again in a few minutes.",
     };
   }
 }

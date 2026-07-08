@@ -1,37 +1,23 @@
 "use client";
 
 import type { FormEvent } from "react";
-import { useEffect, useRef, useState } from "react";
+import { useState, useRef } from "react";
 import { trackEvent } from "@/utils/analytics";
 
 type FormState = {
-  ime: string;
-  prezime: string;
+  firstName: string;
+  lastName: string;
   email: string;
-  telefon: string;
-  discordUsername: string;
-  subjectId: string;
-  prepSessionId: string;
-  attendancePreference: "online" | "physical";
-  poraka: string;
-};
-
-type Subject = {
-  id: string;
-  name: string;
-  slug: string;
+  subject: string;
+  message: string;
 };
 
 const initialState: FormState = {
-  ime: "",
-  prezime: "",
+  firstName: "",
+  lastName: "",
   email: "",
-  telefon: "",
-  discordUsername: "",
-  subjectId: "",
-  prepSessionId: "",
-  attendancePreference: "physical",
-  poraka: "",
+  subject: "",
+  message: "",
 };
 
 function isValidEmail(email: string) {
@@ -40,50 +26,13 @@ function isValidEmail(email: string) {
 
 export function ContactForm() {
   const [form, setForm] = useState<FormState>(initialState);
-  const [subjects, setSubjects] = useState<Subject[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [status, setStatus] = useState<{
-    type: "success" | "error";
-    message: string;
-  } | null>(null);
+  const [status, setStatus] = useState<{ type: "success" | "error"; message: string } | null>(null);
   const hasTrackedStart = useRef(false);
-
-  async function loadSubjects() {
-    try {
-      const response = await fetch("/api/subjects");
-      const payload = (await response.json()) as {
-        subjects?: Subject[];
-        prepSession?: { id: string; title: string } | null;
-      };
-
-      if (!response.ok) {
-        throw new Error("Неуспешно читање предмети.");
-      }
-
-      const nextSubjects = payload.subjects ?? [];
-      setSubjects(nextSubjects);
-      setForm((current) => ({
-        ...current,
-        subjectId: current.subjectId || nextSubjects[0]?.id || "",
-        prepSessionId: payload.prepSession?.id ?? "",
-      }));
-      setStatus(null);
-    } catch {
-      setStatus({
-        type: "error",
-        message: "Вклучи Strapi за да се вчитаат предметите.",
-      });
-    }
-  }
-
-  useEffect(() => {
-    loadSubjects();
-  }, []);
 
   function trackFormStart() {
     if (hasTrackedStart.current) return;
     hasTrackedStart.current = true;
-    // contact_form_start: first focus/click inside contact form.
     trackEvent("contact_form_start", { form_name: "contact" });
   }
 
@@ -94,10 +43,10 @@ export function ContactForm() {
 
     try {
       if (!isValidEmail(form.email)) {
-        throw new Error("Внесете валиден email.");
+        throw new Error("Please enter a valid email.");
       }
 
-      const response = await fetch("/api/applications", {
+      const response = await fetch("/api/contact", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(form),
@@ -106,26 +55,20 @@ export function ContactForm() {
       const payload = (await response.json()) as { error?: string };
 
       if (!response.ok) {
-        throw new Error(payload.error || "Неуспешно праќање.");
+        throw new Error(payload.error || "Failed to send message.");
       }
 
-      setForm((current) => ({
-        ...initialState,
-        prepSessionId: current.prepSessionId,
-        subjectId: subjects[0]?.id || "",
-      }));
+      setForm(initialState);
       setStatus({
         type: "success",
-        message: "Пријавата е зачувана.",
+        message: "Message sent successfully.",
       });
-      // contact_form_submit: only after successful API response.
       trackEvent("contact_form_submit", { form_name: "contact" });
     } catch (error) {
       setStatus({
         type: "error",
-        message: error instanceof Error ? error.message : "Неуспешно праќање.",
+        message: error instanceof Error ? error.message : "Failed to send message.",
       });
-      // contact_form_error: failed contact form submission.
       trackEvent("contact_form_error", { form_name: "contact" });
     } finally {
       setIsSubmitting(false);
@@ -138,7 +81,9 @@ export function ContactForm() {
 
   return (
     <div className="bg-[#F2F0E7] rounded-2xl p-8 shadow-lg">
-      <h2 className="text-2xl font-bold text-[#1E424A] mb-6">Пријава</h2>
+      <h2 className="text-2xl font-bold text-[#1E424A] mb-6">
+        Send a Message
+      </h2>
       <form
         className="space-y-5"
         onSubmit={handleSubmit}
@@ -148,37 +93,37 @@ export function ContactForm() {
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
             <label
-              htmlFor="ime"
+              htmlFor="firstName"
               className="block text-sm font-medium text-[#1E424A] mb-1.5"
             >
-              Име *
+              First Name *
             </label>
             <input
-              id="ime"
-              name="ime"
+              id="firstName"
+              name="firstName"
               type="text"
               required
-              value={form.ime}
-              onChange={(e) => updateField("ime", e.target.value)}
-              placeholder="Вашето име"
+              value={form.firstName}
+              onChange={(e) => updateField("firstName", e.target.value)}
+              placeholder="Your First Name"
               className="w-full px-4 py-3 rounded-lg border border-[#1E424A]/20 bg-white focus:outline-none focus:border-[#008081] focus:ring-2 focus:ring-[#008081]/20 text-[#1E424A] placeholder:text-[#1E424A]/40 transition-all text-sm"
             />
           </div>
           <div>
             <label
-              htmlFor="prezime"
+              htmlFor="lastName"
               className="block text-sm font-medium text-[#1E424A] mb-1.5"
             >
-              Презиме *
+              Last Name *
             </label>
             <input
-              id="prezime"
-              name="prezime"
+              id="lastName"
+              name="lastName"
               type="text"
               required
-              value={form.prezime}
-              onChange={(e) => updateField("prezime", e.target.value)}
-              placeholder="Вашето презиме"
+              value={form.lastName}
+              onChange={(e) => updateField("lastName", e.target.value)}
+              placeholder="Your Last Name"
               className="w-full px-4 py-3 rounded-lg border border-[#1E424A]/20 bg-white focus:outline-none focus:border-[#008081] focus:ring-2 focus:ring-[#008081]/20 text-[#1E424A] placeholder:text-[#1E424A]/40 transition-all text-sm"
             />
           </div>
@@ -197,119 +142,42 @@ export function ContactForm() {
             required
             value={form.email}
             onChange={(e) => updateField("email", e.target.value)}
-            placeholder="vas@email.com"
-            className="w-full px-4 py-3 rounded-lg border border-[#1E424A]/20 bg-white focus:outline-none focus:border-[#008081] focus:ring-2 focus:ring-[#008081]/20 text-[#1E424A] placeholder:text-[#1E424A]/40 transition-all text-sm"
-            />
-        </div>
-        <div>
-          <label
-            htmlFor="telefon"
-            className="block text-sm font-medium text-[#1E424A] mb-1.5"
-          >
-            Телефон *
-          </label>
-          <input
-            id="telefon"
-            name="telefon"
-            type="text"
-            required
-            value={form.telefon}
-            onChange={(e) => updateField("telefon", e.target.value)}
-            placeholder="+389 7X XXX XXX"
+            placeholder="you@email.com"
             className="w-full px-4 py-3 rounded-lg border border-[#1E424A]/20 bg-white focus:outline-none focus:border-[#008081] focus:ring-2 focus:ring-[#008081]/20 text-[#1E424A] placeholder:text-[#1E424A]/40 transition-all text-sm"
           />
         </div>
         <div>
           <label
+            htmlFor="subject"
             className="block text-sm font-medium text-[#1E424A] mb-1.5"
           >
-            Начин на присуство *
+            Subject
           </label>
-          <div className="grid grid-cols-2 overflow-hidden rounded-lg border border-[#1E424A]/20 bg-white p-1">
-            {[
-              { value: "physical", label: "Физичко присуство" },
-              { value: "online", label: "Онлајн" },
-            ].map((option) => (
-              <button
-                key={option.value}
-                type="button"
-                onClick={() =>
-                  setForm((current) => ({
-                    ...current,
-                    attendancePreference: option.value as "online" | "physical",
-                    discordUsername:
-                      option.value === "online" ? current.discordUsername : "",
-                  }))
-                }
-                className={`min-h-11 rounded-md px-3 text-sm font-bold transition-colors ${
-                  form.attendancePreference === option.value
-                    ? "bg-[#008081] text-white shadow-sm"
-                    : "bg-transparent text-[#1E424A]/65 hover:bg-[#F2F0E7]"
-                }`}
-              >
-                {option.label}
-              </button>
-            ))}
-          </div>
-        </div>
-        {form.attendancePreference === "online" && (
-          <div>
-            <label
-              htmlFor="discordUsername"
-              className="block text-sm font-medium text-[#1E424A] mb-1.5"
-            >
-              Discord username
-            </label>
-            <input
-              id="discordUsername"
-              name="discordUsername"
-              type="text"
-              value={form.discordUsername}
-              onChange={(e) => updateField("discordUsername", e.target.value)}
-              placeholder="username"
-              className="w-full px-4 py-3 rounded-lg border border-[#1E424A]/20 bg-white focus:outline-none focus:border-[#008081] focus:ring-2 focus:ring-[#008081]/20 text-[#1E424A] placeholder:text-[#1E424A]/40 transition-all text-sm"
-            />
-          </div>
-        )}
-        <div>
-          <label
-            htmlFor="subjectId"
-            className="block text-sm font-medium text-[#1E424A] mb-1.5"
-          >
-            Предмет *
-          </label>
-          <select
-            id="subjectId"
-            name="subjectId"
-            required
-            value={form.subjectId}
-            onChange={(e) => updateField("subjectId", e.target.value)}
-            className="w-full px-4 py-3 rounded-lg border border-[#1E424A]/20 bg-white focus:outline-none focus:border-[#008081] focus:ring-2 focus:ring-[#008081]/20 text-[#1E424A] transition-all text-sm"
-          >
-            {subjects.map((subject) => (
-              <option key={subject.id} value={subject.id}>
-                {subject.name}
-              </option>
-            ))}
-          </select>
-          <p className="mt-2 text-xs text-[#1E424A]/60">
-            Ќе добиете email со информации за уплата или следни чекори.
-          </p>
+          <input
+            id="subject"
+            name="subject"
+            type="text"
+            value={form.subject}
+            onChange={(e) => updateField("subject", e.target.value)}
+            placeholder="Message Subject"
+            className="w-full px-4 py-3 rounded-lg border border-[#1E424A]/20 bg-white focus:outline-none focus:border-[#008081] focus:ring-2 focus:ring-[#008081]/20 text-[#1E424A] placeholder:text-[#1E424A]/40 transition-all text-sm"
+          />
         </div>
         <div>
           <label
-            htmlFor="poraka"
+            htmlFor="message"
             className="block text-sm font-medium text-[#1E424A] mb-1.5"
           >
-            Порака
+            Message *
           </label>
           <textarea
-            id="poraka"
-            name="poraka"
+            id="message"
+            name="message"
+            required
             rows={5}
-            value={form.poraka}
-            onChange={(e) => updateField("poraka", e.target.value)}
-            placeholder="Белешка за пријавата..."
+            value={form.message}
+            onChange={(e) => updateField("message", e.target.value)}
+            placeholder="Write your message here..."
             className="w-full px-4 py-3 rounded-lg border border-[#1E424A]/20 bg-white focus:outline-none focus:border-[#008081] focus:ring-2 focus:ring-[#008081]/20 text-[#1E424A] placeholder:text-[#1E424A]/40 transition-all resize-none text-sm"
           />
         </div>
@@ -322,23 +190,14 @@ export function ContactForm() {
             }`}
           >
             <span>{status.message}</span>
-            {status.type === "error" && status.message.includes("Strapi") && (
-              <button
-                type="button"
-                onClick={loadSubjects}
-                className="ml-4 rounded bg-[#1E424A] px-3 py-1 text-xs text-white"
-              >
-                Обиди се повторно
-              </button>
-            )}
           </div>
         )}
         <button
           type="submit"
-          disabled={isSubmitting || subjects.length === 0}
+          disabled={isSubmitting}
           className="w-full bg-[#008081] hover:bg-[#006566] disabled:opacity-70 text-white font-medium py-3.5 px-6 rounded-lg transition-colors shadow-md text-sm"
         >
-          {isSubmitting ? "Се праќа..." : "Зачувај пријава"}
+          {isSubmitting ? "Sending..." : "Send Message"}
         </button>
       </form>
     </div>

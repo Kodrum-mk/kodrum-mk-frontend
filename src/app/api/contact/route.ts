@@ -4,11 +4,11 @@ import { rateLimit } from "@/utils/rateLimit";
 const TELEGRAM_API_BASE = "https://api.telegram.org";
 
 type ContactPayload = {
-  ime?: string;
-  prezime?: string;
+  firstName?: string;
+  lastName?: string;
   email?: string;
-  predmet?: string;
-  poraka?: string;
+  subject?: string;
+  message?: string;
 };
 
 function getString(value: unknown) {
@@ -22,7 +22,7 @@ function truncateMessage(message: string) {
 export async function POST(request: Request) {
   const ip = request.headers.get("x-forwarded-for") || "unknown";
   if (!rateLimit(ip)) {
-    return NextResponse.json({ error: "Премногу барања. Обидете се повторно подоцна." }, { status: 429 });
+    return NextResponse.json({ error: "Too many requests. Please try again later." }, { status: 429 });
   }
 
   try {
@@ -33,22 +33,22 @@ export async function POST(request: Request) {
 
     if (!botToken || !chatId) {
       return NextResponse.json(
-        { error: "Telegram не е сетирано." },
+        { error: "Telegram is not configured." },
         { status: 500 },
       );
     }
 
     const body = (await request.json()) as ContactPayload;
 
-    const ime = getString(body.ime);
-    const prezime = getString(body.prezime);
+    const firstName = getString(body.firstName);
+    const lastName = getString(body.lastName);
     const email = getString(body.email);
-    const predmet = getString(body.predmet);
-    const poraka = getString(body.poraka);
+    const subject = getString(body.subject);
+    const message = getString(body.message);
 
-    if (!ime || !prezime || !email || !poraka) {
+    if (!firstName || !lastName || !email || !message) {
       return NextResponse.json(
-        { error: "Недостасуваат задолжителни полиња." },
+        { error: "Missing required fields." },
         { status: 400 },
       );
     }
@@ -63,11 +63,11 @@ export async function POST(request: Request) {
           ...(parsedTopicId != null && !isNaN(parsedTopicId) ? { message_thread_id: parsedTopicId } : {}),
           text: truncateMessage(
             [
-              "Нова порака од контакт форма",
-              `Име: ${ime} ${prezime}`,
+              "Нова порака од контакт форма (New Contact Form Message)",
+              `Name: ${firstName} ${lastName}`,
               `Email: ${email}`,
-              `Предмет: ${predmet || "-"}`,
-              `Порака: ${poraka}`,
+              `Subject: ${subject || "-"}`,
+              `Message: ${message}`,
             ].join("\n"),
           ),
         }),
@@ -76,7 +76,7 @@ export async function POST(request: Request) {
 
     if (!telegramResponse.ok) {
       return NextResponse.json(
-        { error: "Неуспешно праќање кон Telegram." },
+        { error: "Failed to send to Telegram." },
         { status: 502 },
       );
     }
@@ -84,7 +84,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ ok: true });
   } catch {
     return NextResponse.json(
-      { error: "Се случи грешка при праќање." },
+      { error: "An error occurred while sending." },
       { status: 500 },
     );
   }

@@ -471,8 +471,8 @@ export function PripremiClient() {
         throw new Error("Внесете валиден email.");
       }
 
-      if (signupForm.attendancePreference === "online" && !signupForm.discordUsername.trim()) {
-        throw new Error("Discord корисничко име е задолжително за онлајн припреми.");
+      if (!signupForm.discordUsername.trim()) {
+        throw new Error("Discord корисничко име е задолжително.");
       }
 
       const response = await fetch("/api/applications", {
@@ -1077,10 +1077,6 @@ export function PripremiClient() {
                           ...current,
                           attendancePreference:
                             option.value as "online" | "physical",
-                          discordUsername:
-                            option.value === "online"
-                              ? current.discordUsername
-                              : "",
                         }))
                       }
                       className={cn(
@@ -1095,24 +1091,22 @@ export function PripremiClient() {
                   ))}
                 </div>
               </div>
-              {signupForm.attendancePreference === "online" && (
-                <div>
-                  <label
-                    htmlFor="signup-discord"
-                    className="mb-1.5 block text-sm font-medium text-[#1E424A]"
-                  >
-                    Discord username *
-                  </label>
-                  <input
-                    id="signup-discord"
-                    value={signupForm.discordUsername}
-                    onChange={(event) =>
-                      updateSignupField("discordUsername", event.target.value)
-                    }
-                    className="w-full rounded-lg border border-[#1E424A]/20 px-4 py-3 text-sm text-[#1E424A] focus:border-[#008081] focus:outline-none focus:ring-2 focus:ring-[#008081]/20"
-                  />
-                </div>
-              )}
+              <div>
+                <label
+                  htmlFor="signup-discord"
+                  className="mb-1.5 block text-sm font-medium text-[#1E424A]"
+                >
+                  Discord username *
+                </label>
+                <input
+                  id="signup-discord"
+                  value={signupForm.discordUsername}
+                  onChange={(event) =>
+                    updateSignupField("discordUsername", event.target.value)
+                  }
+                  className="w-full rounded-lg border border-[#1E424A]/20 px-4 py-3 text-sm text-[#1E424A] focus:border-[#008081] focus:outline-none focus:ring-2 focus:ring-[#008081]/20"
+                />
+              </div>
               <div>
                 <label
                   htmlFor="signup-poraka"

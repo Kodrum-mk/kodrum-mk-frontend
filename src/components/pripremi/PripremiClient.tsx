@@ -393,8 +393,6 @@ export function PripremiClient() {
         return matchesQuery && matchesFilter;
       })
       .sort((a, b) => {
-        const urgencyDiff = getUrgencyRank(a) - getUrgencyRank(b);
-        if (urgencyDiff !== 0) return urgencyDiff;
         return getDaysUntilStart(a) - getDaysUntilStart(b);
       });
   }, [sessions, query, activeFilter]);

@@ -345,6 +345,16 @@ export function PripremiClient() {
     type: "success" | "error";
     message: string;
   } | null>(null);
+  const [globalNotification, setGlobalNotification] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (globalNotification) {
+      const timer = setTimeout(() => {
+        setGlobalNotification(null);
+      }, 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [globalNotification]);
 
   useEffect(() => {
     let isMounted = true;
@@ -506,10 +516,8 @@ export function PripremiClient() {
       }
 
       setSignupForm(emptySignupForm);
-      setSignupStatus({
-        type: "success",
-        message: "Пријавата е испратена.",
-      });
+      setGlobalNotification("Успешно се пријавивте ве молам проверете го вашиот email за наредни инструкции");
+      closeSignup();
     } catch (error) {
       setSignupStatus({
         type: "error",
@@ -956,7 +964,7 @@ export function PripremiClient() {
           aria-modal="true"
           aria-labelledby="signup-title"
         >
-          <div className="w-full max-w-xl rounded-2xl bg-white p-6 shadow-2xl">
+          <div className="w-full max-w-xl max-h-full overflow-y-auto rounded-2xl bg-white p-6 shadow-2xl">
             <div className="mb-5 flex items-start justify-between gap-4">
               <div>
                 <p className="mb-1 text-sm font-bold text-[#008081]">
@@ -1144,6 +1152,29 @@ export function PripremiClient() {
                 {isSignupSubmitting ? "Се зачувува..." : "Испрати пријава"}
               </button>
             </form>
+          </div>
+        </div>
+      )}
+
+      {globalNotification && (
+        <div className="fixed top-4 right-4 z-[100] bg-white border-l-4 border-[#008081] p-4 rounded-lg shadow-2xl max-w-md animate-in slide-in-from-top-2 fade-in">
+          <div className="flex items-center gap-3">
+            <div className="flex-shrink-0 bg-[#008081]/10 rounded-full p-2">
+              <svg className="w-5 h-5 text-[#008081]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+              </svg>
+            </div>
+            <p className="text-sm font-medium text-[#1E424A]">
+              {globalNotification}
+            </p>
+            <button
+              onClick={() => setGlobalNotification(null)}
+              className="ml-auto text-[#1E424A]/40 hover:text-[#1E424A]"
+            >
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
           </div>
         </div>
       )}

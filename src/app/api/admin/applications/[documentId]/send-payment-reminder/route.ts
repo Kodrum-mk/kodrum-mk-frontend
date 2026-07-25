@@ -22,7 +22,7 @@ export async function POST(
   try {
     const { documentId } = await context.params;
     const response = await fetch(
-      `${STRAPI_BASE_URL}/applications-dashboard/${documentId}/send-payment-reminder`,
+      `${STRAPI_BASE_URL}/applications-dashboard/send-payment-reminder/${documentId}`,
       {
         method: "POST",
         headers: { "x-admin-key": STRAPI_KEY },

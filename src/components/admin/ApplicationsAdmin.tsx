@@ -584,8 +584,14 @@ function AdminRow({
         <input
           type="checkbox"
           checked={paid}
-          onChange={(event) => setPaid(event.target.checked)}
-          className="h-5 w-5"
+          onChange={async (event) => {
+            const newPaid = event.target.checked;
+            setPaid(newPaid);
+            const newAmount = newPaid && paidAmount === 0 ? (row.subjectPrice ?? 0) : paidAmount;
+            setPaidAmount(newAmount);
+            await onSave(nextRow, newPaid, newAmount);
+          }}
+          className="h-5 w-5 cursor-pointer"
         />
       </td>
       <td className="px-3 py-2">
@@ -594,6 +600,11 @@ function AdminRow({
           min="0"
           value={paidAmount}
           onChange={(event) => setPaidAmount(Number(event.target.value))}
+          onBlur={async () => {
+            if (paidAmount !== row.paidAmount) {
+              await onSave(nextRow, paid, paidAmount);
+            }
+          }}
           onKeyDown={(event) => {
             if (event.key === "Enter") {
               event.preventDefault();
@@ -607,8 +618,12 @@ function AdminRow({
         <input
           type="checkbox"
           checked={viberMessaged}
-          onChange={(event) => setViberMessaged(event.target.checked)}
-          className="h-5 w-5"
+          onChange={async (event) => {
+            const newViber = event.target.checked;
+            setViberMessaged(newViber);
+            await onSave({ ...row, viberMessaged: newViber }, paid, paidAmount);
+          }}
+          className="h-5 w-5 cursor-pointer"
         />
       </td>
       <td className="px-3 py-2">

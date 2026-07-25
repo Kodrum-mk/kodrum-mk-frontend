@@ -28,17 +28,27 @@ export async function POST(
         headers: { "x-admin-key": STRAPI_KEY },
       },
     );
-    const payload = await response.json();
+    
+    let payload: any = null;
+    try {
+      payload = await response.json();
+    } catch {
+      payload = null;
+    }
 
     if (!response.ok) {
-      return NextResponse.json(
-        { error: payload?.error?.message ?? "Strapi error." },
-        { status: response.status },
-      );
+      const errorMsg =
+        payload?.error?.message ??
+        (typeof payload?.error === "string" ? payload.error : null) ??
+        `Strapi server error (${response.status}).`;
+      return NextResponse.json({ error: errorMsg }, { status: response.status });
     }
 
     return NextResponse.json({ ok: true });
-  } catch {
-    return NextResponse.json({ error: "Send payment info email failed." }, { status: 500 });
+  } catch (err: any) {
+    return NextResponse.json(
+      { error: err?.message ?? "Send payment info email failed." },
+      { status: 500 },
+    );
   }
 }

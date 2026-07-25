@@ -623,7 +623,7 @@ function AdminRow({
             }`}
             title="Send Group Formed / Payment Info Email"
           >
-            {row.paymentInfoSent ? "✓ Payment Info Sent" : "Send Payment Info (Group Formed)"}
+            {row.paymentInfoSent ? "✓ Group formed" : "Group formed"}
           </button>
           <button
             type="button"
@@ -635,7 +635,7 @@ function AdminRow({
             }`}
             title="Send Payment Reminder Email"
           >
-            {row.paymentReminderSent ? "✓ Reminder Sent" : "Send Reminder"}
+            {row.paymentReminderSent ? "✓ Reminder" : "Reminder"}
           </button>
         </div>
       </td>

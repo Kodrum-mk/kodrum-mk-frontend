@@ -327,7 +327,7 @@ export function ApplicationsAdmin() {
 
   return (
     <main className="min-h-screen bg-[#F8F7F1] px-4 py-6 text-[#1E424A]">
-      <div className="mx-auto max-w-7xl">
+      <div className="mx-auto max-w-[1800px] w-full">
         <div className="mb-4 flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
           <div>
             <h1 className="text-3xl font-bold">Applications</h1>
@@ -403,7 +403,7 @@ export function ApplicationsAdmin() {
               ))}
             </div>
 
-            <div className="mb-3 grid max-w-5xl grid-cols-1 gap-3 md:grid-cols-4">
+            <div className="mb-3 grid w-full grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-4">
               <div>
                 <label
                   htmlFor="prep-session-filter"
@@ -564,12 +564,14 @@ function AdminRow({
         {row.firstName} {row.lastName}
       </td>
       <td className="px-3 py-2">
-        <div>{row.prepSessionTitle || row.subject}</div>
-        {row.subjectNoPaymentInfo && (
-          <span className="mt-0.5 inline-block rounded bg-amber-100 px-1.5 py-0.5 text-[10px] font-bold text-amber-800 border border-amber-300">
-            No Payment Info Subject
-          </span>
-        )}
+        <div className={row.subjectNoPaymentInfo ? "rounded border-2 border-amber-400 bg-amber-50/70 p-1.5 shadow-sm" : ""}>
+          <div className="font-semibold">{row.prepSessionTitle || row.subject}</div>
+          {row.subjectNoPaymentInfo && (
+            <span className="mt-0.5 inline-block rounded bg-amber-200 px-1.5 py-0.5 text-[10px] font-bold text-amber-900 border border-amber-400">
+              No Payment Info
+            </span>
+          )}
+        </div>
       </td>
       <td className="px-3 py-2">{row.faculty || "-"}</td>
       <td className="px-3 py-2">

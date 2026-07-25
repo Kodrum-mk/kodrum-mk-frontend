@@ -15,6 +15,9 @@ type Row = {
   attendancePreference?: "online" | "physical";
   subject?: string;
   subjectPrice?: number;
+  subjectNoPaymentInfo?: boolean;
+  paymentInfoSent?: boolean;
+  paymentReminderSent?: boolean;
   paid: boolean;
   paidAmount: number;
   viberMessaged: boolean;
@@ -272,6 +275,56 @@ export function ApplicationsAdmin() {
     }
   }
 
+  async function sendPaymentInfo(row: Row) {
+    if (!window.confirm(`Send payment info email to ${row.firstName} ${row.lastName}?`)) return;
+
+    setStatus(`Sending payment info to ${row.email}...`);
+    try {
+      const response = await fetch(`/api/admin/applications/${row.documentId}/send-payment-info`, {
+        method: "POST",
+        headers: { "x-admin-key": adminKey },
+      });
+      if (!response.ok) {
+        let errorMsg = "Sending payment info failed.";
+        try {
+          const payload = await response.json();
+          if (payload.error) errorMsg = payload.error;
+        } catch {}
+        setStatus(errorMsg);
+        return;
+      }
+      setStatus(`Payment info sent to ${row.email}`);
+      await loadRows();
+    } catch (e) {
+      setStatus("Sending payment info failed.");
+    }
+  }
+
+  async function sendPaymentReminder(row: Row) {
+    if (!window.confirm(`Send payment reminder email to ${row.firstName} ${row.lastName}?`)) return;
+
+    setStatus(`Sending payment reminder to ${row.email}...`);
+    try {
+      const response = await fetch(`/api/admin/applications/${row.documentId}/send-payment-reminder`, {
+        method: "POST",
+        headers: { "x-admin-key": adminKey },
+      });
+      if (!response.ok) {
+        let errorMsg = "Sending payment reminder failed.";
+        try {
+          const payload = await response.json();
+          if (payload.error) errorMsg = payload.error;
+        } catch {}
+        setStatus(errorMsg);
+        return;
+      }
+      setStatus(`Payment reminder sent to ${row.email}`);
+      await loadRows();
+    } catch (e) {
+      setStatus("Sending payment reminder failed.");
+    }
+  }
+
   return (
     <main className="min-h-screen bg-[#F8F7F1] px-4 py-6 text-[#1E424A]">
       <div className="mx-auto max-w-7xl">
@@ -448,6 +501,7 @@ export function ApplicationsAdmin() {
                     <th className="px-3 py-2 text-left">Paid</th>
                     <th className="px-3 py-2 text-left">Amount</th>
                     <th className="px-3 py-2 text-left">Viber</th>
+                    <th className="px-3 py-2 text-left">Email Actions</th>
                     <th className="px-3 py-2 text-left">Save</th>
                     <th className="px-3 py-2 text-left">Delete</th>
                   </tr>
@@ -459,6 +513,8 @@ export function ApplicationsAdmin() {
                       row={row}
                       onDelete={deleteRow}
                       onSave={saveRow}
+                      onSendPaymentInfo={sendPaymentInfo}
+                      onSendPaymentReminder={sendPaymentReminder}
                     />
                   ))}
                 </tbody>
@@ -475,10 +531,14 @@ function AdminRow({
   row,
   onSave,
   onDelete,
+  onSendPaymentInfo,
+  onSendPaymentReminder,
 }: {
   row: Row;
   onSave: (row: Row, paid: boolean, paidAmount: number) => Promise<void>;
   onDelete: (row: Row) => Promise<void>;
+  onSendPaymentInfo: (row: Row) => Promise<void>;
+  onSendPaymentReminder: (row: Row) => Promise<void>;
 }) {
   const [paid, setPaid] = useState(row.paid);
   const [paidAmount, setPaidAmount] = useState(row.paidAmount);
@@ -503,7 +563,14 @@ function AdminRow({
       <td className="px-3 py-2 font-bold">
         {row.firstName} {row.lastName}
       </td>
-      <td className="px-3 py-2">{row.prepSessionTitle || row.subject}</td>
+      <td className="px-3 py-2">
+        <div>{row.prepSessionTitle || row.subject}</div>
+        {row.subjectNoPaymentInfo && (
+          <span className="mt-0.5 inline-block rounded bg-amber-100 px-1.5 py-0.5 text-[10px] font-bold text-amber-800 border border-amber-300">
+            No Payment Info Subject
+          </span>
+        )}
+      </td>
       <td className="px-3 py-2">{row.faculty || "-"}</td>
       <td className="px-3 py-2">
         {row.attendancePreference === "online" ? "Онлајн" : "Физичко"}
@@ -541,6 +608,36 @@ function AdminRow({
           onChange={(event) => setViberMessaged(event.target.checked)}
           className="h-5 w-5"
         />
+      </td>
+      <td className="px-3 py-2">
+        <div className="flex flex-col gap-1 sm:flex-row sm:items-center">
+          <button
+            type="button"
+            onClick={() => onSendPaymentInfo(row)}
+            className={`rounded px-2.5 py-1 text-xs font-bold transition ${
+              row.paymentInfoSent
+                ? "bg-emerald-100 text-emerald-800 border border-emerald-300"
+                : row.subjectNoPaymentInfo
+                ? "bg-amber-600 hover:bg-amber-700 text-white shadow-sm"
+                : "bg-blue-600 hover:bg-blue-700 text-white"
+            }`}
+            title="Send Group Formed / Payment Info Email"
+          >
+            {row.paymentInfoSent ? "✓ Payment Info Sent" : "Send Payment Info (Group Formed)"}
+          </button>
+          <button
+            type="button"
+            onClick={() => onSendPaymentReminder(row)}
+            className={`rounded px-2.5 py-1 text-xs font-bold transition ${
+              row.paymentReminderSent
+                ? "bg-emerald-100 text-emerald-800 border border-emerald-300"
+                : "bg-indigo-600 hover:bg-indigo-700 text-white"
+            }`}
+            title="Send Payment Reminder Email"
+          >
+            {row.paymentReminderSent ? "✓ Reminder Sent" : "Send Reminder"}
+          </button>
+        </div>
       </td>
       <td className="px-3 py-2">
         <button

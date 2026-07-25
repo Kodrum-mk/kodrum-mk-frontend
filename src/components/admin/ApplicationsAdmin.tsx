@@ -623,7 +623,7 @@ function AdminRow({
             }`}
             title="Send Group Formed / Payment Info Email"
           >
-            {row.paymentInfoSent ? "✓ Group formed" : "Group formed"}
+            {row.paymentInfoSent ? "✓ Formed" : "Formed"}
           </button>
           <button
             type="button"

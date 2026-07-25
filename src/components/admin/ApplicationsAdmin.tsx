@@ -541,7 +541,7 @@ function AdminRow({
   onSendPaymentReminder: (row: Row) => Promise<void>;
 }) {
   const [paid, setPaid] = useState(row.paid);
-  const [paidAmount, setPaidAmount] = useState(row.paidAmount);
+  const [paidAmount, setPaidAmount] = useState<number | "">(row.paidAmount);
   const [viberMessaged, setViberMessaged] = useState(row.viberMessaged);
   
   useEffect(() => {
@@ -587,7 +587,8 @@ function AdminRow({
           onChange={async (event) => {
             const newPaid = event.target.checked;
             setPaid(newPaid);
-            const newAmount = newPaid && paidAmount === 0 ? (row.subjectPrice ?? 0) : paidAmount;
+            const currentNum = paidAmount === "" ? 0 : paidAmount;
+            const newAmount = newPaid && currentNum === 0 ? (row.subjectPrice ?? 0) : currentNum;
             setPaidAmount(newAmount);
             await onSave(nextRow, newPaid, newAmount);
           }}
@@ -599,16 +600,23 @@ function AdminRow({
           type="number"
           min="0"
           value={paidAmount}
-          onChange={(event) => setPaidAmount(Number(event.target.value))}
+          onChange={(event) => {
+            const val = event.target.value;
+            setPaidAmount(val === "" ? "" : Number(val));
+          }}
           onBlur={async () => {
-            if (paidAmount !== row.paidAmount) {
-              await onSave(nextRow, paid, paidAmount);
+            const numAmount = paidAmount === "" ? 0 : paidAmount;
+            if (paidAmount === "") setPaidAmount(0);
+            if (numAmount !== row.paidAmount) {
+              await onSave(nextRow, paid, numAmount);
             }
           }}
           onKeyDown={(event) => {
             if (event.key === "Enter") {
               event.preventDefault();
-              void onSave(nextRow, paid, paidAmount);
+              const numAmount = paidAmount === "" ? 0 : paidAmount;
+              if (paidAmount === "") setPaidAmount(0);
+              void onSave(nextRow, paid, numAmount);
             }
           }}
           className="amount-input w-28 rounded border border-[#1E424A]/20 px-2 py-1"
@@ -659,7 +667,7 @@ function AdminRow({
       <td className="px-3 py-2">
         <button
           type="button"
-          onClick={() => onSave(nextRow, paid, paidAmount)}
+          onClick={() => onSave(nextRow, paid, paidAmount === "" ? 0 : paidAmount)}
           className="rounded bg-[#008081] px-3 py-1.5 text-xs font-bold text-white"
         >
           Save

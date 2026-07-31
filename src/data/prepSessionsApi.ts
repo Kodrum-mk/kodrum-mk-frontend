@@ -50,6 +50,7 @@ export type PrepSessionsLoadResult = {
   sessions: PrepSession[];
   source: "strapi" | "fallback";
   errorMessage?: string;
+  errorDetail?: string;
 };
 
 function extractDaysFromDuration(duration: string): number {
@@ -191,6 +192,20 @@ export async function fetchPrepSessionsFromStrapi(
   return sessions;
 }
 
+function describeLoadFailure(error: unknown): string {
+  if (error instanceof Error && error.name === "AbortError") {
+    return "Request to Strapi was aborted — it timed out or the page navigated away";
+  }
+
+  // A cross-origin block, DNS failure or unreachable host all surface as a bare
+  // TypeError in the browser, with no response to inspect.
+  if (error instanceof TypeError) {
+    return `Network request to Strapi failed, likely CORS or an unreachable host (${error.message})`;
+  }
+
+  return error instanceof Error ? error.message : String(error);
+}
+
 export async function loadPrepSessions(
   signal?: AbortSignal,
 ): Promise<PrepSessionsLoadResult> {
@@ -209,19 +224,21 @@ export async function loadPrepSessions(
       source: "strapi",
     };
   } catch (error) {
-    if (process.env.NODE_ENV !== "production") {
-      console.warn("Failed to load active prep session from Strapi", {
-        error,
-        endpoint: `${STRAPI_BASE_URL}/prep-sessions`,
-        baseUrl: STRAPI_BASE_URL,
-      });
-    }
+    const errorDetail = describeLoadFailure(error);
+
+    console.error("Failed to load active prep session from Strapi", {
+      detail: errorDetail,
+      endpoint: `${STRAPI_BASE_URL}/prep-sessions`,
+      baseUrl: STRAPI_BASE_URL,
+      error,
+    });
 
     return {
       sessions: [],
       source: "strapi",
       errorMessage:
-        "503 Service Unavailable: Data is currently being refreshed or the system is under maintenance. Please try again in a few minutes.",
+        "Моментално не можеме да ги вчитаме активните припреми. Обиди се повторно за неколку минути.",
+      errorDetail,
     };
   }
 }

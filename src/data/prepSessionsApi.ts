@@ -1,5 +1,4 @@
 import type { PrepSession } from "@/types";
-import { fallbackPrepSessions } from "@/data/prepSessions";
 
 const STRAPI_BASE_URL = `${process.env.STRAPI_URL ?? process.env.NEXT_PUBLIC_STRAPI_URL ?? "http://localhost:1337"}/api`;
 const PREP_SOURCE = process.env.NEXT_PUBLIC_PREP_DATA_SOURCE ?? "strapi";
@@ -171,11 +170,26 @@ export async function fetchPrepSessionsFromStrapi(
   signal?: AbortSignal,
 ): Promise<PrepSession[]> {
   const url = `${STRAPI_BASE_URL}/prep-sessions?${ACTIVE_PREP_SESSION_QUERY}`;
-  const response = await fetch(url, {
-    method: "GET",
-    cache: "no-store",
-    signal,
-  });
+
+  let response: Response;
+  try {
+    response = await fetch(url, {
+      method: "GET",
+      cache: "no-store",
+      signal,
+    });
+  } catch (error) {
+    if (isAbortError(error)) throw error;
+    // A cross-origin block, DNS failure or unreachable host all surface as a
+    // bare TypeError here, with no response to inspect. Tag it while we still
+    // know it came from the request itself and not from parsing the payload.
+    throw new Error(
+      `Network request to Strapi failed, likely CORS or an unreachable host (${
+        error instanceof Error ? error.message : String(error)
+      })`,
+      { cause: error },
+    );
+  }
 
   if (!response.ok) {
     throw new Error(`Strapi request failed with status ${response.status}`);
@@ -189,6 +203,24 @@ export async function fetchPrepSessionsFromStrapi(
   }
 
   return sessions;
+}
+
+// fetch rejects with a DOMException rather than an Error, so match on the name
+// instead of the constructor. AbortSignal.timeout() names its reason TimeoutError.
+function isAbortError(error: unknown): boolean {
+  if (typeof error !== "object" || error === null || !("name" in error)) {
+    return false;
+  }
+  const name = (error as { name: unknown }).name;
+  return name === "AbortError" || name === "TimeoutError";
+}
+
+function describeLoadFailure(error: unknown): string {
+  if (isAbortError(error)) {
+    return "Request to Strapi was aborted — it timed out or the page navigated away";
+  }
+
+  return error instanceof Error ? error.message : String(error);
 }
 
 export async function loadPrepSessions(
@@ -209,19 +241,18 @@ export async function loadPrepSessions(
       source: "strapi",
     };
   } catch (error) {
-    if (process.env.NODE_ENV !== "production") {
-      console.warn("Failed to load active prep session from Strapi", {
-        error,
-        endpoint: `${STRAPI_BASE_URL}/prep-sessions`,
-        baseUrl: STRAPI_BASE_URL,
-      });
-    }
+    console.error("Failed to load active prep session from Strapi", {
+      detail: describeLoadFailure(error),
+      endpoint: `${STRAPI_BASE_URL}/prep-sessions`,
+      baseUrl: STRAPI_BASE_URL,
+      error,
+    });
 
     return {
       sessions: [],
       source: "strapi",
       errorMessage:
-        "503 Service Unavailable: Data is currently being refreshed or the system is under maintenance. Please try again in a few minutes.",
+        "Моментално не можеме да ги вчитаме активните припреми. Обиди се повторно за неколку минути.",
     };
   }
 }

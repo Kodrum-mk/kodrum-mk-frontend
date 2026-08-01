@@ -629,7 +629,11 @@ function AdminRow({
           onChange={async (event) => {
             const newViber = event.target.checked;
             setViberMessaged(newViber);
-            await onSave({ ...row, viberMessaged: newViber }, paid, paidAmount);
+            await onSave(
+              { ...row, viberMessaged: newViber },
+              paid,
+              paidAmount === "" ? 0 : paidAmount,
+            );
           }}
           className="h-5 w-5 cursor-pointer"
         />

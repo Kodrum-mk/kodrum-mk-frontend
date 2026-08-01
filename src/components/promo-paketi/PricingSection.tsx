@@ -106,6 +106,7 @@ export function PricingSection() {
                   cards.length % 2 === 1 &&
                   index === cards.length - 1;
                 const savingsAmount = formatSavingsAmount(card.savings);
+                const isPercentageSavings = savingsAmount.includes("%");
 
                 return (
                   <Link
@@ -145,7 +146,7 @@ export function PricingSection() {
                     </p>
 
                     {/* Price */}
-                    <div className="bg-[#F2F0E7] rounded-lg p-6 mb-6 border-2 border-[#FACC0B]/60 text-center">
+                    <div className="flex min-h-[196px] flex-col items-center justify-center rounded-lg border-2 border-[#FACC0B]/60 bg-[#F2F0E7] p-6 mb-6 text-center">
                       <div className="mb-3 text-xl font-extrabold uppercase tracking-wide text-[#1E424A]">
                         Заштеди:
                       </div>
@@ -153,9 +154,11 @@ export function PricingSection() {
                         <span className="text-5xl font-black leading-none">
                           {savingsAmount}
                         </span>
-                        <span className="text-base font-extrabold uppercase tracking-wide">
-                          денари
-                        </span>
+                        {!isPercentageSavings && (
+                          <span className="text-base font-extrabold uppercase tracking-wide">
+                            денари
+                          </span>
+                        )}
                       </div>
                     </div>
 

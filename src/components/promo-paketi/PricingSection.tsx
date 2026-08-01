@@ -17,6 +17,7 @@ function getCardIcon(index: number, card: PromoPackage) {
 function getNoteIcon(noteText?: string) {
   if (!noteText) return null;
   if (noteText.includes("Минимум")) return AlertCircle;
+  if (noteText.includes("пријател")) return Users;
   return Clock;
 }
 

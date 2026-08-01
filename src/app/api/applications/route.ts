@@ -17,6 +17,8 @@ type ApplicationPayload = {
   attendanceText?: string;
   attendancePreference?: string;
   coursePrice?: string;
+  referralSource?: string;
+  referredBy?: string;
   poraka?: string;
 };
 
@@ -49,6 +51,8 @@ export async function POST(request: Request) {
     const attendanceText = getString(body.attendanceText);
     const attendancePreference = getString(body.attendancePreference);
     const coursePrice = getString(body.coursePrice);
+    const referralSource = getString(body.referralSource);
+    const referredBy = getString(body.referredBy);
     const poraka = getString(body.poraka);
 
     if (!ime || !prezime || !email || !telefon || (!subjectId && !subjectName)) {
@@ -93,6 +97,8 @@ export async function POST(request: Request) {
           attendanceText,
           attendancePreference,
           coursePrice,
+          referralSource,
+          referredBy,
         },
       }),
     });

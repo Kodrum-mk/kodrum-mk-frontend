@@ -1,7 +1,15 @@
 import Link from "next/link";
 import { Check } from "lucide-react";
 
-const heroCards = [
+type HeroCard = {
+  title: string;
+  href: string | null;
+  cta: string;
+  disabled?: boolean;
+  points: string[];
+};
+
+const heroCards: HeroCard[] = [
   {
     title: "Припреми",
     href: "/pripremi",
@@ -14,7 +22,8 @@ const heroCards = [
   },
   {
     title: "Онлајн курсеви",
-    href: "https://ecourses.kodrum.dev",
+    href: null,
+    disabled: true,
     cta: "Види ги Курсевите",
     points: [
       "Видео материјали и задачи достапни во секое време",
@@ -92,16 +101,20 @@ export function Hero() {
                     </li>
                   ))}
                 </ul>
-                {card.href.startsWith("http") ? (
-                  <a
-                    href={card.href}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    data-analytics-subject={card.title}
-                    className="w-full bg-[#008081] hover:bg-[#006566] text-white font-medium py-3.5 px-6 rounded-lg transition-colors shadow-md block text-center text-sm"
-                  >
-                    {card.cta}
-                  </a>
+                {card.disabled || !card.href ? (
+                  <div className="relative">
+                    <span className="absolute -top-2 -right-2 z-10 rotate-12 rounded bg-[#FACC0B] px-2 py-1 text-[11px] leading-none font-bold text-[#1E424A] shadow-md">
+                      Наскоро
+                    </span>
+                    <button
+                      type="button"
+                      disabled
+                      data-analytics-subject={card.title}
+                      className="w-full bg-[#008081]/40 text-white font-medium py-3.5 px-6 rounded-lg shadow-md block text-center text-sm cursor-not-allowed"
+                    >
+                      {card.cta}
+                    </button>
+                  </div>
                 ) : (
                   <Link
                     href={card.href}

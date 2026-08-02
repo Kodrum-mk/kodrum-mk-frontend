@@ -1,9 +1,9 @@
+import { Facebook, Instagram } from "lucide-react";
 import Link from "next/link";
-import { Facebook, Instagram, Linkedin, Mail } from "lucide-react";
 
 const navLinks = [
   { label: "Почетна", href: "/" },
-  { label: "Курсеви", href: "https://ecourses.kodrum.dev" },
+  // TODO: restore { label: "Курсеви", href: ... } when the courses site is live
   { label: "Припреми", href: "/pripremi" },
   { label: "Промо пакети", href: "/promo-paketi" },
   { label: "Контакт", href: "/kontakt" },
@@ -95,20 +95,20 @@ export function Footer() {
               {/* TODO: Replace with actual Kodrum social media URLs */}
               {[
                 {
-                  href: "https://facebook.com",
+                  href: "https://www.facebook.com/p/%D0%95%D0%B4%D1%83%D0%BA%D0%B0%D1%82%D0%B8%D0%B2%D0%B5%D0%BD-%D0%A6%D0%B5%D0%BD%D1%82%D0%B0%D1%80-%D0%9A%D0%BE%D0%B4%D1%80%D1%83%D0%BC-61583240054450/",
                   Icon: Facebook,
                   label: "Facebook",
                 },
                 {
-                  href: "https://instagram.com",
+                  href: "https://www.instagram.com/kodrum.mk/",
                   Icon: Instagram,
                   label: "Instagram",
                 },
-                {
-                  href: "https://linkedin.com",
-                  Icon: Linkedin,
-                  label: "LinkedIn",
-                },
+                // {
+                //   href: "https://linkedin.com",
+                //   Icon: Linkedin,
+                //   label: "LinkedIn",
+                // },
               ].map(({ href, Icon, label }) => (
                 <a
                   key={label}

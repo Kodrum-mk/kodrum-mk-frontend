@@ -1145,10 +1145,17 @@ export function PripremiClient() {
                 />
               </div>
               <div>
-                <label className="mb-1.5 block text-sm font-medium text-[#1E424A]">
+                <span
+                  id="signup-referral-source-label"
+                  className="mb-1.5 block text-sm font-medium text-[#1E424A]"
+                >
                   Како слушна за нас? *
-                </label>
-                <div className="flex flex-wrap gap-2">
+                </span>
+                <div
+                  role="group"
+                  aria-labelledby="signup-referral-source-label"
+                  className="flex flex-wrap gap-2"
+                >
                   {referralSourceOptions.map((option) => (
                     <button
                       key={option.value}

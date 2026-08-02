@@ -55,7 +55,14 @@ export async function POST(request: Request) {
     const referredBy = getString(body.referredBy);
     const poraka = getString(body.poraka);
 
-    if (!ime || !prezime || !email || !telefon || (!subjectId && !subjectName)) {
+    if (
+      !ime ||
+      !prezime ||
+      !email ||
+      !telefon ||
+      !referralSource ||
+      (!subjectId && !subjectName)
+    ) {
       return NextResponse.json(
         { error: "Недостасуваат задолжителни полиња." },
         { status: 400 },

@@ -10,7 +10,7 @@ const iconByIndex = [Star, Gift, Users];
 
 function getCardIcon(index: number, card: PromoPackage) {
   if (card.featured) return Gift;
-  if (card.noteText?.includes("пријатели")) return Users;
+  if (card.noteText?.includes("пријател")) return Users;
   return iconByIndex[index % iconByIndex.length];
 }
 

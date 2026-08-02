@@ -13,6 +13,8 @@ type Row = {
   prepSessionTitle?: string;
   faculty?: string;
   attendancePreference?: "online" | "physical";
+  referralSource?: string;
+  referredBy?: string;
   subject?: string;
   subjectPrice?: number;
   subjectNoPaymentInfo?: boolean;
@@ -498,6 +500,8 @@ export function ApplicationsAdmin() {
                     <th className="px-3 py-2 text-left">Email</th>
                     <th className="px-3 py-2 text-left">Phone</th>
                     <th className="px-3 py-2 text-left">Discord</th>
+                    <th className="px-3 py-2 text-left">Heard about us</th>
+                    <th className="px-3 py-2 text-left">Referred by</th>
                     <th className="px-3 py-2 text-left">Paid</th>
                     <th className="px-3 py-2 text-left">Amount</th>
                     <th className="px-3 py-2 text-left">Viber</th>
@@ -580,6 +584,16 @@ function AdminRow({
       <td className="px-3 py-2">{row.email}</td>
       <td className="px-3 py-2">{row.phone || "-"}</td>
       <td className="px-3 py-2">{row.discordUsername || "-"}</td>
+      <td className="px-3 py-2">{row.referralSource || "-"}</td>
+      <td className="px-3 py-2">
+        {row.referredBy ? (
+          <span className="rounded bg-[#008081]/10 px-1.5 py-0.5 font-semibold text-[#008081]">
+            {row.referredBy}
+          </span>
+        ) : (
+          "-"
+        )}
+      </td>
       <td className="px-3 py-2">
         <input
           type="checkbox"

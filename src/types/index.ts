@@ -34,6 +34,26 @@ export interface PrepSession {
   format: string;
 }
 
+export type ReferralSource =
+  | "social"
+  | "friend"
+  | "group"
+  | "returning"
+  | "other";
+
+export interface SignupFormState {
+  ime: string;
+  prezime: string;
+  email: string;
+  telefon: string;
+  discordUsername: string;
+  attendancePreference: "online" | "physical";
+  referralSource: ReferralSource | "";
+  referralSourceOther: string;
+  referredBy: string;
+  poraka: string;
+}
+
 export interface PromoPackage {
   id: string;
   badge?: string;

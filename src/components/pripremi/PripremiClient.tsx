@@ -1,33 +1,40 @@
 "use client";
 
-import type { FormEvent } from "react";
-import { useEffect, useMemo, useState } from "react";
-import {
-  Search,
-  Calendar as CalendarIcon,
-  User,
-  Users,
-  Clock,
-  GraduationCap,
-  ChevronLeft,
-  ChevronRight,
-  FileText,
-} from "lucide-react";
 import { eventColors } from "@/data/prepSessions";
 import { loadPrepSessions } from "@/data/prepSessionsApi";
-import type { PrepSession } from "@/types";
+import type { PrepSession, ReferralSource, SignupFormState } from "@/types";
 import { cn } from "@/utils/cn";
+import {
+  Calendar as CalendarIcon,
+  Clock,
+  FileText,
+  GraduationCap,
+  Search,
+  User,
+} from "lucide-react";
+import type { FormEvent } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { PrepPrice } from "./PrepPrice";
 
-type SignupFormState = {
-  ime: string;
-  prezime: string;
-  email: string;
-  telefon: string;
-  discordUsername: string;
-  attendancePreference: "online" | "physical";
-  poraka: string;
-};
+const referralSourceOptions: { value: ReferralSource; label: string }[] = [
+  { value: "social", label: "Содржина на социјални мрежи" },
+  { value: "friend", label: "Пријател" },
+  { value: "group", label: "Порака во група" },
+  { value: "returning", label: "Повторно се пријавувам" },
+  { value: "other", label: "Друго" },
+];
+
+// The API stores the referral source as free text, so send the human-readable
+// label of the picked option — or, for "other", whatever the user typed.
+function getReferralSourceLabel(form: SignupFormState) {
+  if (form.referralSource === "other") {
+    return form.referralSourceOther.trim();
+  }
+  const option = referralSourceOptions.find(
+    (item) => item.value === form.referralSource,
+  );
+  return option?.label ?? "";
+}
 
 const emptySignupForm: SignupFormState = {
   ime: "",
@@ -36,6 +43,9 @@ const emptySignupForm: SignupFormState = {
   telefon: "",
   discordUsername: "",
   attendancePreference: "physical",
+  referralSource: "",
+  referralSourceOther: "",
+  referredBy: "",
   poraka: "",
 };
 
@@ -256,20 +266,18 @@ function getUrgencyRank(session: PrepSession) {
   return Number.POSITIVE_INFINITY;
 }
 
-function formatSpots(session: PrepSession) {
-  if (session.spotsLeft === 0) return "Нема слободни места";
-  if (session.spotsLeft === 1) return "Последно слободно место";
-  if (session.spotsLeft <= 3) {
-    return `Последни ${session.spotsLeft} слободни места`;
-  }
-  return `${session.spotsLeft} слободни места`;
+function formatPaymentDeadline(session: PrepSession) {
+  const start = parseIsoDate(session.startDateIso);
+  if (!start) return null;
+
+  const deadline = new Date(start.getFullYear(), start.getMonth(), start.getDate() - 1);
+  return new Intl.DateTimeFormat("mk-MK", {
+    day: "numeric",
+    month: "long",
+  }).format(deadline);
 }
 
-function getSpotsClass(spotsLeft: number) {
-  if (spotsLeft <= 1) return "text-[#DC2626]";
-  if (spotsLeft <= 3) return "text-[#EA580C]";
-  return "text-[#D4A400]";
-}function toMonthKey(year: number, month: number) {
+function toMonthKey(year: number, month: number) {
   return `${year}-${String(month + 1).padStart(2, "0")}`;
 }
 
@@ -428,6 +436,10 @@ export function PripremiClient() {
     ? getRegistrationNotice(selectedEvent)
     : null;
 
+  const paymentDeadline = signupSession
+    ? formatPaymentDeadline(signupSession)
+    : null;
+
   useEffect(() => {
     if (
       !selectedEvent ||
@@ -483,6 +495,20 @@ export function PripremiClient() {
         throw new Error("Discord корисничко име е задолжително.");
       }
 
+      if (!signupForm.referralSource) {
+        throw new Error("Изберете како слушнавте за нас.");
+      }
+
+      if (
+        signupForm.referralSource === "other" &&
+        !signupForm.referralSourceOther.trim()
+      ) {
+        throw new Error("Напишете како слушнавте за нас.");
+      }
+
+      const referralSourceLabel = getReferralSourceLabel(signupForm);
+      const referredBy = signupForm.referredBy.trim();
+
       const response = await fetch("/api/applications", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -499,7 +525,9 @@ export function PripremiClient() {
               ? "онлајн"
               : "физичко присуство"
           }, ${signupSession.startDate}`,
-          coursePrice: String(signupSession.price ?? 2500),
+          coursePrice: String(signupSession.price ?? 'Цената не е достапна'),
+          referralSource: referralSourceLabel,
+          referredBy,
           poraka: [
             signupForm.poraka,
             `Припрема: ${signupSession.title}`,
@@ -595,7 +623,6 @@ export function PripremiClient() {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {filtered.map((session) => {
                 const notice = getRegistrationNotice(session);
-                const spotsLabel = formatSpots(session);
 
                 return (
                   <article
@@ -687,19 +714,10 @@ export function PripremiClient() {
                           </div>
                         ))}
                     </div>
-                    <div
-                      className={cn(
-                        "mb-3 mt-auto flex items-center gap-2 text-lg font-bold",
-                        getSpotsClass(session.spotsLeft),
-                      )}
-                    >
-                      <Users
-                        className="h-5 w-5"
-                        aria-hidden="true"
-                      />
-                      {spotsLabel}
-                    </div>
-                    <PrepPrice price={session.price} className="mb-3" />
+                    <PrepPrice price={session.price} className="mb-3 mt-auto" />
+                    <p className="mb-2 text-center text-xs font-medium text-[#1E424A]/60">
+                      Не мора да платиш сега.
+                    </p>
                     <button
                       type="button"
                       onClick={() => openSignup(session)}
@@ -900,11 +918,6 @@ export function PripremiClient() {
                           value: selectedEvent.instructor,
                         },
                         {
-                          Icon: Users,
-                          label: "Места",
-                          value: formatSpots(selectedEvent),
-                        },
-                        {
                           Icon: GraduationCap,
                           label: "Формат",
                           value: selectedEvent.format,
@@ -936,15 +949,20 @@ export function PripremiClient() {
                           </div>
                         ))}
                     </div>
-                    <button
-                      type="button"
-                      onClick={() => openSignup(selectedEvent)}
-                      data-analytics-subject={selectedEvent.title}
-                      data-analytics-cta="booking"
-                      className="w-full bg-[#008081] hover:bg-[#006566] text-white font-bold py-3 px-6 rounded-lg transition-colors shadow-md text-lg text-center"
-                    >
-                      Пријави се
-                    </button>
+                    <div>
+                      <p className="mb-2 text-center text-xs font-medium text-[#1E424A]/60">
+                        Не мора да платиш сега.
+                      </p>
+                      <button
+                        type="button"
+                        onClick={() => openSignup(selectedEvent)}
+                        data-analytics-subject={selectedEvent.title}
+                        data-analytics-cta="booking"
+                        className="w-full bg-[#008081] hover:bg-[#006566] text-white font-bold py-3 px-6 rounded-lg transition-colors shadow-md text-lg text-center"
+                      >
+                        Пријави се
+                      </button>
+                    </div>
                   </div>
                 ) : (
                   <p className="text-sm text-[#1E424A]/60">
@@ -974,7 +992,7 @@ export function PripremiClient() {
                   id="signup-title"
                   className="text-2xl font-bold text-[#1E424A]"
                 >
-                  {signupSession.title} - {signupSession.price} МКД
+                  {signupSession.title}
                 </h2>
               </div>
               <button
@@ -1114,6 +1132,78 @@ export function PripremiClient() {
                 />
               </div>
               <div>
+                <span
+                  id="signup-referral-source-label"
+                  className="mb-1.5 block text-sm font-medium text-[#1E424A]"
+                >
+                  Како слушна за нас? *
+                </span>
+                <div
+                  role="group"
+                  aria-labelledby="signup-referral-source-label"
+                  className="flex flex-wrap gap-2"
+                >
+                  {referralSourceOptions.map((option) => (
+                    <button
+                      key={option.value}
+                      type="button"
+                      onClick={() =>
+                        setSignupForm((current) => ({
+                          ...current,
+                          referralSource: option.value,
+                          referralSourceOther:
+                            option.value === "other"
+                              ? current.referralSourceOther
+                              : "",
+                        }))
+                      }
+                      aria-pressed={signupForm.referralSource === option.value}
+                      className={cn(
+                        "min-h-11 rounded-lg border px-4 text-sm font-bold transition-colors",
+                        signupForm.referralSource === option.value
+                          ? "border-[#008081] bg-[#008081] text-white shadow-sm"
+                          : "border-[#1E424A]/20 bg-white text-[#1E424A]/70 hover:bg-[#F2F0E7]",
+                      )}
+                    >
+                      {option.label}
+                    </button>
+                  ))}
+                </div>
+                {signupForm.referralSource === "other" && (
+                  <input
+                    id="signup-referral-other"
+                    aria-label="Напиши како слушна за нас"
+                    placeholder="Напиши како слушна за нас"
+                    value={signupForm.referralSourceOther}
+                    onChange={(event) =>
+                      updateSignupField("referralSourceOther", event.target.value)
+                    }
+                    className="mt-2 w-full rounded-lg border border-[#1E424A]/20 px-4 py-3 text-sm text-[#1E424A] focus:border-[#008081] focus:outline-none focus:ring-2 focus:ring-[#008081]/20"
+                  />
+                )}
+              </div>
+              <div>
+                <label
+                  htmlFor="signup-referred-by"
+                  className="mb-1.5 block text-sm font-medium text-[#1E424A]"
+                >
+                  Кој те препорача?
+                </label>
+                <input
+                  id="signup-referred-by"
+                  placeholder="Име и презиме"
+                  value={signupForm.referredBy}
+                  onChange={(event) =>
+                    updateSignupField("referredBy", event.target.value)
+                  }
+                  className="w-full rounded-lg border border-[#1E424A]/20 px-4 py-3 text-sm text-[#1E424A] focus:border-[#008081] focus:outline-none focus:ring-2 focus:ring-[#008081]/20"
+                />
+                <p className="mt-2 text-xs text-[#1E424A]/60">
+                  Ако те препорачал пријател, напиши го неговото име и презиме -
+                  двајцата добивате 10% попуст.
+                </p>
+              </div>
+              <div>
                 <label
                   htmlFor="signup-poraka"
                   className="mb-1.5 block text-sm font-medium text-[#1E424A]"
@@ -1130,6 +1220,19 @@ export function PripremiClient() {
                   className="w-full resize-none rounded-lg border border-[#1E424A]/20 px-4 py-3 text-sm text-[#1E424A] focus:border-[#008081] focus:outline-none focus:ring-2 focus:ring-[#008081]/20"
                 />
               </div>
+
+              {signupSession.price != null && (
+                <div className="rounded-lg border-2 border-[#FACC0B]/60 bg-[#F2F0E7] px-4 py-3 text-sm text-[#1E424A]">
+                  <p className="font-bold">
+                    Цената на припремата е {signupSession.price} денари.
+                  </p>
+                  {paymentDeadline && (
+                    <p className="mt-1 text-[#1E424A]/75">
+                      Уплатата треба да се изврши до {paymentDeadline}.
+                    </p>
+                  )}
+                </div>
+              )}
 
               {signupStatus && (
                 <div

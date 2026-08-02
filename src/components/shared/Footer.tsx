@@ -3,7 +3,7 @@ import { Facebook, Instagram, Linkedin, Mail } from "lucide-react";
 
 const navLinks = [
   { label: "Почетна", href: "/" },
-  { label: "Курсеви", href: "https://courses.kodrum.dev" },
+  { label: "Курсеви", href: "https://ecourses.kodrum.dev" },
   { label: "Припреми", href: "/pripremi" },
   { label: "Промо пакети", href: "/promo-paketi" },
   { label: "Контакт", href: "/kontakt" },

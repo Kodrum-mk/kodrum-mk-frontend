@@ -14,7 +14,7 @@ const heroCards = [
   },
   {
     title: "Онлајн курсеви",
-    href: "https://courses.kodrum.dev",
+    href: "https://ecourses.kodrum.dev",
     cta: "Види ги Курсевите",
     points: [
       "Видео материјали и задачи достапни во секое време",

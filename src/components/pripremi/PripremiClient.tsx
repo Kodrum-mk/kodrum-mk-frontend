@@ -2,7 +2,7 @@
 
 import { eventColors } from "@/data/prepSessions";
 import { loadPrepSessions } from "@/data/prepSessionsApi";
-import type { PrepSession } from "@/types";
+import type { PrepSession, ReferralSource, SignupFormState } from "@/types";
 import { cn } from "@/utils/cn";
 import {
   Calendar as CalendarIcon,
@@ -16,26 +16,6 @@ import type { FormEvent } from "react";
 import { useEffect, useMemo, useState } from "react";
 import { PrepPrice } from "./PrepPrice";
 
-type ReferralSource =
-  | "social"
-  | "friend"
-  | "group"
-  | "returning"
-  | "other";
-
-type SignupFormState = {
-  ime: string;
-  prezime: string;
-  email: string;
-  telefon: string;
-  discordUsername: string;
-  attendancePreference: "online" | "physical";
-  referralSource: ReferralSource | "";
-  referralSourceOther: string;
-  referredBy: string;
-  poraka: string;
-};
-
 const referralSourceOptions: { value: ReferralSource; label: string }[] = [
   { value: "social", label: "Содржина на социјални мрежи" },
   { value: "friend", label: "Пријател" },
@@ -43,6 +23,18 @@ const referralSourceOptions: { value: ReferralSource; label: string }[] = [
   { value: "returning", label: "Повторно се пријавувам" },
   { value: "other", label: "Друго" },
 ];
+
+// The API stores the referral source as free text, so send the human-readable
+// label of the picked option — or, for "other", whatever the user typed.
+function getReferralSourceLabel(form: SignupFormState) {
+  if (form.referralSource === "other") {
+    return form.referralSourceOther.trim();
+  }
+  const option = referralSourceOptions.find(
+    (item) => item.value === form.referralSource,
+  );
+  return option?.label ?? "";
+}
 
 const emptySignupForm: SignupFormState = {
   ime: "",
@@ -514,12 +506,7 @@ export function PripremiClient() {
         throw new Error("Напишете како слушнавте за нас.");
       }
 
-      const referralSourceLabel =
-        signupForm.referralSource === "other"
-          ? signupForm.referralSourceOther.trim()
-          : referralSourceOptions.find(
-              (option) => option.value === signupForm.referralSource,
-            )?.label ?? "";
+      const referralSourceLabel = getReferralSourceLabel(signupForm);
       const referredBy = signupForm.referredBy.trim();
 
       const response = await fetch("/api/applications", {
@@ -538,7 +525,7 @@ export function PripremiClient() {
               ? "онлајн"
               : "физичко присуство"
           }, ${signupSession.startDate}`,
-          coursePrice: String(signupSession.price ?? 2500),
+          coursePrice: String(signupSession.price ?? 'Цената не е достапна'),
           referralSource: referralSourceLabel,
           referredBy,
           poraka: [

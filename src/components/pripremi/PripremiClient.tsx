@@ -260,6 +260,10 @@ function getDaysUntilStart(session: PrepSession) {
   return Math.round((startDay.getTime() - today.getTime()) / 86_400_000);
 }
 
+function hasSessionStarted(session: PrepSession) {
+  return getDaysUntilStart(session) <= 0;
+}
+
 function getUrgencyRank(session: PrepSession) {
   const daysUntilStart = getDaysUntilStart(session);
   if (daysUntilStart >= 1 && daysUntilStart <= 3) return daysUntilStart;
@@ -403,6 +407,7 @@ export function PripremiClient() {
   const filtered = useMemo(() => {
     return sessions
       .filter((s) => {
+        if (hasSessionStarted(s)) return false;
         const matchesQuery =
           s.title.toLowerCase().includes(query.toLowerCase()) ||
           s.faculty.toLowerCase().includes(query.toLowerCase());

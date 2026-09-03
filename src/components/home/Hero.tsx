@@ -5,30 +5,31 @@ type HeroCard = {
   title: string;
   href: string | null;
   cta: string;
+  badge?: string;
   disabled?: boolean;
   points: string[];
 };
 
 const heroCards: HeroCard[] = [
   {
-    title: "Припреми",
-    href: "/pripremi",
-    cta: "Види ги Припремите",
+    title: "Часови за ФИНКИ",
+    href: "/privatni-casovi-finki",
+    cta: "Види приватни часови за ФИНКИ",
+    badge: "Најбарано",
     points: [
-      "Во живо или онлајн во мали групи",
-      "На однапред одредени датуми по 2-3 часа дневно",
-      "Решавање испитни задачи, техники за положување",
+      "СП, ООП, АПС, Калкулус 1, Веб, Бази",
+      "Индивидуални 1-на-1 или мали групи во Скопје и онлајн",
+      "Решавање колоквиумски и испитни задачи од минати сесии",
     ],
   },
   {
-    title: "Онлајн курсеви",
-    href: null,
-    disabled: true,
-    cta: "Види ги Курсевите",
+    title: "Испитни припреми",
+    href: "/pripremi",
+    cta: "Види ги припремите",
     points: [
-      "Видео материјали и задачи достапни во секое време",
-      "24/7 поддршка од инструкторот на курсот",
-      "Учење со свое темпо",
+      "Во живо во Скопје или онлајн во мали групи",
+      "На однапред одредени датуми по 2-3 часа дневно",
+      "Техники и финти за сигурно положување",
     ],
   },
 ];
@@ -52,17 +53,19 @@ export function Hero() {
       <div className="max-w-7xl mx-auto w-full relative z-10">
         <div className="grid grid-cols-1 lg:grid-cols-[55%_45%] gap-12 lg:gap-16 items-center">
           {/* Left column */}
-          <div className="space-y-8">
+          <div className="space-y-6">
+            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#008081]/10 text-[#008081] text-xs sm:text-sm font-bold">
+              <span>🎯</span> Приватни часови & испитна подготовка
+            </div>
             <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-[#1E424A] leading-tight text-balance">
-              Спреми се за испит со Кодрум!
+              Приватни часови и испитна подготовка
             </h1>
             <p className="text-lg sm:text-xl text-[#1E424A]/70 leading-relaxed max-w-2xl">
-              Сега е вистинско време да завршите со испитите и да уживате во
-              летото без стрес! 😎🌴
+              Стручна подготовка за колоквиуми и испити за студенти од ФИНКИ, ФЕИТ, МФС и Економски. Заврши со испитите со висока оцена и без стрес! 😎🌴
             </p>
             <div>
               <p className="text-sm font-medium text-[#1E424A]/60 mb-3">
-                За студенти од:
+                Приватни часови за студенти од:
               </p>
               <div className="flex flex-wrap gap-3">
                 {faculties.map((f) => (
@@ -84,9 +87,16 @@ export function Hero() {
                 key={card.title}
                 className="bg-white border-2 border-[#1E424A]/10 rounded-2xl p-8 shadow-lg hover:shadow-xl transition-shadow"
               >
-                <h2 className="text-2xl font-bold text-[#1E424A] mb-4">
-                  {card.title}
-                </h2>
+                <div className="flex items-center justify-between gap-2 mb-4">
+                  <h2 className="text-2xl font-bold text-[#1E424A]">
+                    {card.title}
+                  </h2>
+                  {"badge" in card && card.badge && (
+                    <span className="rounded-full bg-[#008081]/10 px-2.5 py-0.5 text-xs font-bold text-[#008081]">
+                      {card.badge}
+                    </span>
+                  )}
+                </div>
                 <ul className="space-y-3 mb-6">
                   {card.points.map((pt) => (
                     <li

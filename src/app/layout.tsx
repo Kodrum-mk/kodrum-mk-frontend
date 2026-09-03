@@ -13,26 +13,107 @@ const gaMeasurementId =
   process.env.NEXT_PUBLIC_GA_ID ?? process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID;
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://kodrum.mk"),
   title: {
-    default: "Кодрум – Испитна подготовка за студенти",
+    default: "Кодрум – Приватни часови и испитна подготовка за студенти (ФИНКИ)",
     template: "%s | Кодрум",
   },
   description:
-    "Сега е вистинско време да завршите со испитите и да уживате во летото без стрес! 😎🌴 За студенти од ФИНКИ, ФЕИТ, МФС и Економски.",
+    "Професионални приватни часови и испитна подготовка за студенти од ФИНКИ, ФЕИТ, МФС и Економски. Индивидуални и групни часови за СП, ООП, АПС, Калкулус и програмирање во Скопје и онлајн.",
   keywords: [
+    "приватни часови финки",
+    "privatni casovi finki",
+    "часови финки",
+    "casovi finki",
+    "приватни часови за финки",
+    "испитна подготовка финки",
     "кодрум",
+    "кодрум мк",
     "испити",
     "подготовка",
     "ФИНКИ",
     "ФЕИТ",
+    "МФС",
+    "Економски",
     "студенти",
     "курсеви",
+    "програмирање",
+    "математика",
+    "структурно програмирање",
+    "објектно програмирање",
+    "алгоритми и структури на податоци",
+    "приватни часови скопје",
   ],
+  alternates: {
+    canonical: "/",
+  },
   openGraph: {
+    title: "Кодрум – Приватни часови и испитна подготовка за студенти",
+    description:
+      "Приватни часови и испитна подготовка за студенти од ФИНКИ, ФЕИТ, МФС и Економски во Скопје и онлајн.",
+    url: "https://kodrum.mk",
     siteName: "Кодрум",
     locale: "mk_MK",
     type: "website",
   },
+  twitter: {
+    card: "summary_large_image",
+    title: "Кодрум – Приватни часови и испитна подготовка за студенти",
+    description:
+      "Приватни часови и испитна подготовка за студенти од ФИНКИ, ФЕИТ, МФС и Економски во Скопје и онлајн.",
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-video-preview": -1,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+    },
+  },
+};
+
+const organizationSchema = {
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "EducationalOrganization",
+      "@id": "https://kodrum.mk/#organization",
+      "name": "Кодрум (Kodrum)",
+      "url": "https://kodrum.mk",
+      "logo": "https://kodrum.mk/logo.png",
+      "description":
+        "Образовна платформа за приватни часови, колоквиумска и испитна подготовка за студенти на ФИНКИ, ФЕИТ, МФС и Економски во Скопје и онлајн.",
+      "telephone": "+38975295582",
+      "email": "kodrum.mk@gmail.com",
+      "address": {
+        "@type": "PostalAddress",
+        "addressLocality": "Skopje",
+        "addressCountry": "MK",
+      },
+      "areaServed": {
+        "@type": "Country",
+        "name": "North Macedonia",
+      },
+      "sameAs": [
+        "https://www.instagram.com/kodrum.mk/",
+        "https://www.facebook.com/61583240054450/",
+        "https://discord.gg/FmMjw3Q564",
+      ],
+    },
+    {
+      "@type": "WebSite",
+      "@id": "https://kodrum.mk/#website",
+      "url": "https://kodrum.mk",
+      "name": "Кодрум",
+      "publisher": {
+        "@id": "https://kodrum.mk/#organization",
+      },
+      "inLanguage": "mk-MK",
+    },
+  ],
 };
 
 export const viewport: Viewport = {
@@ -48,6 +129,13 @@ export default function RootLayout({
 }) {
   return (
     <html lang="mk">
+      <head>
+        <link rel="alternate" type="text/plain" href="/llms.txt" title="LLM Context" />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationSchema) }}
+        />
+      </head>
       <body className={inter.className}>
         {gaMeasurementId && (
           <Suspense fallback={null}>

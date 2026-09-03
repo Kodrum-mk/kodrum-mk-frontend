@@ -3,7 +3,7 @@ import Link from "next/link";
 
 const navLinks = [
   { label: "Почетна", href: "/" },
-  { label: "Часови за ФИНКИ", href: "/privatni-casovi-finki" },
+  // { label: "Часови за ФИНКИ", href: "/privatni-casovi-finki" },
   { label: "Припреми", href: "/pripremi" },
   // TODO: restore { label: "Курсеви", href: ... } when the courses site is live
   { label: "Промо пакети", href: "/promo-paketi" },

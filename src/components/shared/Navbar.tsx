@@ -8,7 +8,7 @@ import { cn } from "@/utils/cn";
 
 const navLinks = [
   { label: "Почетна", href: "/" },
-  { label: "Часови за ФИНКИ", href: "/privatni-casovi-finki" },
+  // { label: "Часови за ФИНКИ", href: "/privatni-casovi-finki" },
   { label: "Припреми", href: "/pripremi" },
   { label: "Курсеви", href: null, disabled: true },
   { label: "Промо пакети", href: "/promo-paketi" },

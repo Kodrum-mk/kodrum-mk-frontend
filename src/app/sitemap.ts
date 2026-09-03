@@ -9,7 +9,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     changeFrequency: "always" | "hourly" | "daily" | "weekly" | "monthly" | "yearly" | "never";
   }> = [
     { path: "", priority: 1.0, changeFrequency: "daily" },
-    { path: "/privatni-casovi-finki", priority: 1.0, changeFrequency: "daily" },
+    // { path: "/privatni-casovi-finki", priority: 1.0, changeFrequency: "daily" },
     { path: "/pripremi", priority: 0.9, changeFrequency: "daily" },
     { path: "/promo-paketi", priority: 0.8, changeFrequency: "weekly" },
     { path: "/kontakt", priority: 0.8, changeFrequency: "weekly" },

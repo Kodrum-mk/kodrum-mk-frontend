@@ -1,4 +1,4 @@
-import type { PrepSession } from "@/types";
+import type { PrepDateBlock, PrepSession } from "@/types";
 
 const STRAPI_BASE_URL = `${process.env.STRAPI_URL ?? process.env.NEXT_PUBLIC_STRAPI_URL ?? "http://localhost:1337"}/api`;
 const PREP_SOURCE = process.env.NEXT_PUBLIC_PREP_DATA_SOURCE ?? "strapi";
@@ -7,6 +7,7 @@ const ACTIVE_PREP_SESSION_QUERY =
   "filters[active][$eq]=true" +
   "&populate[subjects][populate][0]=faculty" +
   "&populate[subjects][populate][1]=instructors" +
+  "&populate[subjects][populate][2]=scheduleBlocks" +
   "&sort[0]=title:asc" +
   "&pagination[page]=1" +
   "&pagination[pageSize]=50";
@@ -22,6 +23,13 @@ type StrapiPrepSession = {
   subjects?: StrapiSubject[];
 };
 
+type StrapiScheduleBlock = {
+  id?: number;
+  startDate?: string | null;
+  durationDays?: number | null;
+  note?: string | null;
+};
+
 type StrapiSubject = {
   id?: number;
   documentId?: string;
@@ -30,6 +38,8 @@ type StrapiSubject = {
   startDate?: string;
   examDate?: string;
   duration?: string;
+  hasGapDays?: boolean;
+  scheduleBlocks?: StrapiScheduleBlock[] | null;
   price?: number;
   spotsLeft?: number;
   faculty?: StrapiFaculty | null;
@@ -51,6 +61,21 @@ export type PrepSessionsLoadResult = {
   errorMessage?: string;
 };
 
+const MACEDONIAN_MONTHS = [
+  "Јануари",
+  "Февруари",
+  "Март",
+  "Април",
+  "Мај",
+  "Јуни",
+  "Јули",
+  "Август",
+  "Септември",
+  "Октомври",
+  "Ноември",
+  "Декември",
+];
+
 function extractDaysFromDuration(duration: string): number {
   const match = duration.match(/(\d+)/);
   if (match) {
@@ -59,23 +84,171 @@ function extractDaysFromDuration(duration: string): number {
   return 1;
 }
 
+/**
+ * Parses a `YYYY-MM-DD` day into a UTC-anchored date. Every date derived here
+ * stays in UTC so adding days and formatting never shift across a timezone or
+ * DST boundary.
+ */
+function parseIsoDay(value: string | null | undefined): Date | null {
+  if (!value) return null;
+  const match = /^(\d{4})-(\d{2})-(\d{2})/.exec(String(value).trim());
+  if (!match) return null;
+  const date = new Date(
+    Date.UTC(Number(match[1]), Number(match[2]) - 1, Number(match[3])),
+  );
+  return Number.isNaN(date.getTime()) ? null : date;
+}
+
+function toIsoDay(date: Date): string {
+  return date.toISOString().slice(0, 10);
+}
+
+function addDays(iso: string, days: number): string {
+  const date = parseIsoDay(iso);
+  if (!date) return iso;
+  date.setUTCDate(date.getUTCDate() + days);
+  return toIsoDay(date);
+}
+
+function macedonianOrdinal(day: number): string {
+  if ([1, 21, 31].includes(day)) return "ви";
+  if ([2, 22].includes(day)) return "ри";
+  if ([7, 8, 27, 28].includes(day)) return "ми";
+  return "ти";
+}
+
 function formatMacedonianDate(dateStr: string): string {
-  const date = new Date(dateStr);
-  if (Number.isNaN(date.getTime())) return dateStr;
-  
-  const day = date.getDate();
-  let suffix = "ти";
-  if ([1, 21, 31].includes(day)) suffix = "ви";
-  else if ([2, 22].includes(day)) suffix = "ри";
-  else if ([7, 8, 27, 28].includes(day)) suffix = "ми";
-  
-  const monthNames = [
-    "Јануари", "Февруари", "Март", "Април", "Мај", "Јуни",
-    "Јули", "Август", "Септември", "Октомври", "Ноември", "Декември"
-  ];
-  const month = monthNames[date.getMonth()];
-  
-  return `${day}${suffix} ${month}`;
+  const date = parseIsoDay(dateStr);
+  if (!date) return dateStr;
+  const day = date.getUTCDate();
+  return `${day}${macedonianOrdinal(day)} ${MACEDONIAN_MONTHS[date.getUTCMonth()]}`;
+}
+
+function daysBetween(startIso: string, endIso: string): number {
+  const start = parseIsoDay(startIso);
+  const end = parseIsoDay(endIso);
+  if (!start || !end) return 1;
+  return Math.round((end.getTime() - start.getTime()) / 86_400_000) + 1;
+}
+
+/** "11ти Септември", "11ти – 12ти Септември", "30ти Август – 2ри Септември". */
+function formatDateRange(startIso: string, endIso: string): string {
+  const start = parseIsoDay(startIso);
+  const end = parseIsoDay(endIso);
+  if (!start || !end || startIso === endIso) {
+    return formatMacedonianDate(startIso);
+  }
+  if (
+    start.getUTCFullYear() === end.getUTCFullYear() &&
+    start.getUTCMonth() === end.getUTCMonth()
+  ) {
+    const startDay = start.getUTCDate();
+    return `${startDay}${macedonianOrdinal(startDay)} – ${formatMacedonianDate(endIso)}`;
+  }
+  return `${formatMacedonianDate(startIso)} – ${formatMacedonianDate(endIso)}`;
+}
+
+function blockLabel(startIso: string, endIso: string, note?: string): string {
+  const range = formatDateRange(startIso, endIso);
+  if (!note) return range;
+  // The joined label list is rendered by splitting on commas, so a note may not
+  // introduce one of its own.
+  const safeNote = note.replace(/,/g, " ").replace(/\s+/g, " ").trim();
+  return safeNote ? `${range} (${safeNote})` : range;
+}
+
+/**
+ * Collapses blocks that overlap in time — an admin typo such as "11 Sep for 5
+ * days" next to "13 Sep for 2 days" — so the calendar draws one bar and the
+ * total day count does not double-count the shared days.
+ */
+function mergeOverlappingBlocks(
+  blocks: { startIso: string; endIso: string; note?: string }[],
+) {
+  const merged: { startIso: string; endIso: string; note?: string }[] = [];
+
+  blocks.forEach((block) => {
+    const previous = merged[merged.length - 1];
+    if (previous && block.startIso <= previous.endIso) {
+      merged[merged.length - 1] = {
+        startIso: previous.startIso,
+        endIso: block.endIso > previous.endIso ? block.endIso : previous.endIso,
+        note: previous.note ?? block.note,
+      };
+      return;
+    }
+    merged.push(block);
+  });
+
+  return merged;
+}
+
+function formatDays(days: number): string {
+  return days === 1 ? "1 ден" : `${days} дена`;
+}
+
+function formatBlockCount(count: number): string {
+  if (count === 1) return "1 термин";
+  if (count < 5) return `${count} термина`;
+  return `${count} термини`;
+}
+
+/**
+ * Keeps only the descriptive half of a free-text duration
+ * ("3 дена, 2 часа дневно" -> "2 часа дневно") so a derived block summary can
+ * carry it along without repeating the day count.
+ */
+function extraDurationInfo(duration: string | undefined): string | null {
+  if (!duration) return null;
+  const commaIndex = duration.indexOf(",");
+  const remainder =
+    commaIndex === -1 ? duration : duration.slice(commaIndex + 1);
+  const trimmed = remainder.trim();
+  if (!trimmed) return null;
+  if (/^\d+\s*(ден|дена|денови)?$/i.test(trimmed)) return null;
+  return trimmed;
+}
+
+/**
+ * Turns the repeatable `scheduleBlocks` component into chronologically sorted
+ * blocks of consecutive class days. Rows with a missing or malformed date drop
+ * out rather than poisoning the derived start and end dates.
+ */
+function buildDateBlocks(subject: StrapiSubject): PrepDateBlock[] {
+  if (!subject.hasGapDays) return [];
+
+  const rows = Array.isArray(subject.scheduleBlocks)
+    ? subject.scheduleBlocks
+    : [];
+
+  const spans = rows
+    .map((row) => {
+      const start = parseIsoDay(row?.startDate);
+      if (!start) return null;
+
+      const rawDays = Number(row?.durationDays ?? 1);
+      const days =
+        Number.isFinite(rawDays) && rawDays >= 1 ? Math.floor(rawDays) : 1;
+      const startIso = toIsoDay(start);
+
+      return {
+        startIso,
+        endIso: addDays(startIso, days - 1),
+        note: row?.note?.trim() || undefined,
+      };
+    })
+    .filter((span): span is NonNullable<typeof span> => span !== null)
+    // The admin can drag repeatable entries into any order, so chronology is
+    // established here rather than trusted from the payload.
+    .sort((a, b) => a.startIso.localeCompare(b.startIso));
+
+  return mergeOverlappingBlocks(spans).map((span) => ({
+    startIso: span.startIso,
+    endIso: span.endIso,
+    days: daysBetween(span.startIso, span.endIso),
+    label: blockLabel(span.startIso, span.endIso, span.note),
+    note: span.note,
+  }));
 }
 
 function mapSubjectToPrepSession(
@@ -93,21 +266,41 @@ function mapSubjectToPrepSession(
   const instructorNames = (subject.instructors ?? [])
     .map((instructor) => instructor.name?.trim())
     .filter((name): name is string => Boolean(name));
-  let durationStr = subject.duration?.trim();
-  if (durationStr && /^\d+$/.test(durationStr)) {
-    durationStr += " денови";
-  }
-  durationStr = durationStr || "По договор";
-  
-  const startDateStr = subject.startDate?.trim();
-  let endDateIso = startDateStr;
-  if (startDateStr) {
-    const days = extractDaysFromDuration(durationStr);
-    if (days > 1) {
-      const date = new Date(startDateStr);
-      if (!Number.isNaN(date.getTime())) {
-        date.setDate(date.getDate() + days - 1);
-        endDateIso = date.toISOString().split("T")[0];
+
+  // Subjects that run in several blocks with gap days derive their dates and
+  // duration from the blocks; every other subject keeps the legacy single
+  // startDate + free-text duration behaviour untouched.
+  const dateBlocks = buildDateBlocks(subject);
+  const usesBlocks = dateBlocks.length > 0;
+
+  let durationStr: string;
+  let startDateIso: string | undefined;
+  let endDateIso: string | undefined;
+
+  if (usesBlocks) {
+    const totalDays = dateBlocks.reduce((sum, block) => sum + block.days, 0);
+    let summary = formatDays(totalDays);
+    if (dateBlocks.length > 1) {
+      summary += ` (${formatBlockCount(dateBlocks.length)})`;
+    }
+    const extra = extraDurationInfo(subject.duration?.trim());
+    durationStr = extra ? `${summary}, ${extra}` : summary;
+
+    startDateIso = dateBlocks[0].startIso;
+    endDateIso = dateBlocks[dateBlocks.length - 1].endIso;
+  } else {
+    let legacyDuration = subject.duration?.trim();
+    if (legacyDuration && /^\d+$/.test(legacyDuration)) {
+      legacyDuration += " денови";
+    }
+    durationStr = legacyDuration || "По договор";
+
+    startDateIso = subject.startDate?.trim() || undefined;
+    endDateIso = startDateIso;
+    if (startDateIso) {
+      const days = extractDaysFromDuration(durationStr);
+      if (days > 1) {
+        endDateIso = addDays(startDateIso, days - 1);
       }
     }
   }
@@ -123,9 +316,15 @@ function mapSubjectToPrepSession(
       instructorNames.length > 0
         ? instructorNames.join(", ")
         : "Непознат инструктор",
-    startDateIso: startDateStr,
+    startDateIso,
     endDateIso,
-    startDate: startDateStr ? formatMacedonianDate(startDateStr) : "Непознат датум",
+    startDate: startDateIso
+      ? formatMacedonianDate(startDateIso)
+      : "Непознат датум",
+    dateBlocks: usesBlocks ? dateBlocks : undefined,
+    datesLabel: usesBlocks
+      ? dateBlocks.map((block) => block.label).join(", ")
+      : undefined,
     examDate: subject.examDate ? formatMacedonianDate(subject.examDate) : undefined,
     duration: durationStr,
     price: subject.price ?? 2500,

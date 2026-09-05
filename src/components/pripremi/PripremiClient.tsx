@@ -179,32 +179,68 @@ function getEventsForWeek(
   month: number,
   year: number,
 ) {
-  const seen = new Set<string>();
-  const result: { session: PrepSession; startCol: number; endCol: number }[] =
-    [];
+  const weekNumbers = weekDays.filter((day): day is number => day !== null);
+  if (weekNumbers.length === 0) return [];
 
-  weekDays.forEach((day) => {
-    if (!day) return;
-    sessions.forEach((session) => {
-      const range = getSessionRangeForMonth(session, month, year);
-      if (
-        !range ||
-        day < range.startDay ||
-        day > range.endDay ||
-        seen.has(session.id)
+  const weekStart = weekNumbers[0];
+  const weekEnd = weekNumbers[weekNumbers.length - 1];
+
+  const result: {
+    session: PrepSession;
+    key: string;
+    row: number;
+    startCol: number;
+    endCol: number;
+  }[] = [];
+  // One row per session, as before. A session's own gapped blocks share that
+  // row whenever they do not overlap, so a subject running Mon-Tue and Thu-Fri
+  // reads as two bars on one line rather than two stacked lines.
+  const rows: { startCol: number; endCol: number }[][] = [];
+
+  sessions.forEach((session) => {
+    const bars = getSessionRangesForMonth(session, month, year).flatMap(
+      (range) => {
+        const visibleStart = Math.max(range.startDay, weekStart);
+        const visibleEnd = Math.min(range.endDay, weekEnd);
+        if (visibleStart > visibleEnd) return [];
+
+        const startCol = weekDays.indexOf(visibleStart);
+        const endCol = weekDays.indexOf(visibleEnd);
+
+        return [
+          {
+            key: range.key,
+            startCol: startCol === -1 ? 0 : startCol,
+            endCol: endCol === -1 ? 6 : endCol,
+          },
+        ];
+      },
+    );
+
+    const firstRow = rows.length;
+    bars.forEach((bar) => {
+      let row = firstRow;
+      while (
+        rows[row]?.some(
+          (placed) =>
+            bar.startCol <= placed.endCol && placed.startCol <= bar.endCol,
+        )
       ) {
-        return;
+        row += 1;
       }
-      seen.add(session.id);
-      const startCol = weekDays.findIndex((d) => d === range.startDay);
-      const endCol = weekDays.findIndex((d) => d === range.endDay);
+      if (!rows[row]) rows[row] = [];
+      rows[row].push(bar);
+
       result.push({
         session,
-        startCol: startCol !== -1 ? startCol : 0,
-        endCol: endCol !== -1 ? endCol : 6,
+        key: `${session.id}:${bar.key}`,
+        row,
+        startCol: bar.startCol,
+        endCol: bar.endCol,
       });
     });
   });
+
   return result;
 }
 
@@ -281,6 +317,41 @@ function formatPaymentDeadline(session: PrepSession) {
   }).format(deadline);
 }
 
+/**
+ * The card / detail row describing when a subject runs. A lone block with no
+ * note is shown as a plain start date, so subjects that do not use gap days
+ * look exactly as they did before blocks existed.
+ */
+function getScheduleRow(session: PrepSession, singleLabel: string) {
+  const blocks = session.dateBlocks;
+  if (blocks && session.datesLabel && (blocks.length > 1 || blocks[0]?.note)) {
+    return { label: "Термини", value: session.datesLabel };
+  }
+  return { label: singleLabel, value: session.startDate };
+}
+
+/**
+ * The schedule as it is stamped onto the application. `attendanceText` is a
+ * Strapi string column, so a subject with many blocks falls back to a compact
+ * summary rather than overflowing it.
+ */
+function formatAttendanceSchedule(session: PrepSession) {
+  const full = session.datesLabel ?? session.startDate;
+  if (full.length <= 180) return full;
+
+  const blockCount = session.dateBlocks?.length ?? 0;
+  return `од ${session.startDate}, ${blockCount} термини`;
+}
+
+function formatSpots(session: PrepSession) {
+  if (session.spotsLeft === 0) return "Нема слободни места";
+  if (session.spotsLeft === 1) return "Последно слободно место";
+  if (session.spotsLeft <= 3) {
+    return `Последни ${session.spotsLeft} слободни места`;
+  }
+  return `${session.spotsLeft} слободни места`;
+}
+
 function toMonthKey(year: number, month: number) {
   return `${year}-${String(month + 1).padStart(2, "0")}`;
 }
@@ -293,51 +364,85 @@ function formatMonthLabel(year: number, month: number) {
   return label.charAt(0).toUpperCase() + label.slice(1);
 }
 
-function getSessionRangeForMonth(
+/**
+ * Every run of consecutive class days for a session. Subjects with gap days
+ * yield one entry per block; every other subject yields a single entry, which
+ * is exactly what the calendar drew before blocks existed.
+ */
+function getSessionRanges(session: PrepSession) {
+  if (session.dateBlocks && session.dateBlocks.length > 0) {
+    return session.dateBlocks.map((block, index) => ({
+      key: `block-${index}`,
+      startIso: block.startIso,
+      endIso: block.endIso,
+    }));
+  }
+
+  if (!session.startDateIso) return [];
+
+  return [
+    {
+      key: "block-0",
+      startIso: session.startDateIso,
+      endIso: session.endDateIso ?? session.startDateIso,
+    },
+  ];
+}
+
+function getSessionRangesForMonth(
   session: PrepSession,
   month: number,
   year: number,
 ) {
-  const start = parseIsoDate(session.startDateIso);
-  const end = parseIsoDate(session.endDateIso ?? session.startDateIso);
-  if (!start || !end) return null;
-
   const monthStart = new Date(year, month, 1);
   const monthEnd = new Date(year, month + 1, 0);
-  if (end < monthStart || start > monthEnd) return null;
 
-  const visibleStart = start < monthStart ? monthStart : start;
-  const visibleEnd = end > monthEnd ? monthEnd : end;
+  return getSessionRanges(session).flatMap((range) => {
+    const start = parseIsoDate(range.startIso);
+    const end = parseIsoDate(range.endIso);
+    if (!start || !end || end < monthStart || start > monthEnd) return [];
 
-  return {
-    startDay: visibleStart.getDate(),
-    endDay: visibleEnd.getDate(),
-  };
+    const visibleStart = start < monthStart ? monthStart : start;
+    const visibleEnd = end > monthEnd ? monthEnd : end;
+
+    return [
+      {
+        key: range.key,
+        startDay: visibleStart.getDate(),
+        endDay: visibleEnd.getDate(),
+      },
+    ];
+  });
 }
 
 function getSessionMonthKeys(session: PrepSession) {
-  const start = parseIsoDate(session.startDateIso);
-  const end = parseIsoDate(session.endDateIso ?? session.startDateIso);
-  if (!start || !end) return [];
+  const keys = new Map<
+    string,
+    { key: string; year: number; month: number; label: string }
+  >();
 
-  const keys: { key: string; year: number; month: number; label: string }[] =
-    [];
-  const cursor = new Date(start.getFullYear(), start.getMonth(), 1);
-  const limit = new Date(end.getFullYear(), end.getMonth(), 1);
+  // Only months that actually contain class days are listed, so a gap that
+  // spans a whole month does not add an empty calendar page.
+  getSessionRanges(session).forEach((range) => {
+    const start = parseIsoDate(range.startIso);
+    const end = parseIsoDate(range.endIso);
+    if (!start || !end) return;
 
-  while (cursor <= limit) {
-    const year = cursor.getFullYear();
-    const month = cursor.getMonth();
-    keys.push({
-      key: toMonthKey(year, month),
-      year,
-      month,
-      label: formatMonthLabel(year, month),
-    });
-    cursor.setMonth(cursor.getMonth() + 1);
-  }
+    const cursor = new Date(start.getFullYear(), start.getMonth(), 1);
+    const limit = new Date(end.getFullYear(), end.getMonth(), 1);
 
-  return keys;
+    while (cursor <= limit) {
+      const year = cursor.getFullYear();
+      const month = cursor.getMonth();
+      const key = toMonthKey(year, month);
+      if (!keys.has(key)) {
+        keys.set(key, { key, year, month, label: formatMonthLabel(year, month) });
+      }
+      cursor.setMonth(cursor.getMonth() + 1);
+    }
+  });
+
+  return Array.from(keys.values());
 }
 
 export function PripremiClient() {
@@ -416,7 +521,12 @@ export function PripremiClient() {
         return matchesQuery && matchesFilter;
       })
       .sort((a, b) => {
-        return getDaysUntilStart(a) - getDaysUntilStart(b);
+        const left = getDaysUntilStart(a);
+        const right = getDaysUntilStart(b);
+        // Two sessions with no usable date are both Infinity, and subtracting
+        // those yields NaN, which leaves the card order unspecified.
+        if (left === right) return 0;
+        return left - right;
       });
   }, [sessions, query, activeFilter]);
 
@@ -529,7 +639,7 @@ export function PripremiClient() {
             signupForm.attendancePreference === "online"
               ? "онлајн"
               : "физичко присуство"
-          }, ${signupSession.startDate}`,
+          }, ${formatAttendanceSchedule(signupSession)}`,
           coursePrice: String(signupSession.price ?? 'Цената не е достапна'),
           referralSource: referralSourceLabel,
           referredBy,
@@ -672,8 +782,7 @@ export function PripremiClient() {
                         },
                         {
                           Icon: CalendarIcon,
-                          label: "Почнува",
-                          value: session.startDate,
+                          ...getScheduleRow(session, "Почнува"),
                         },
                         {
                           Icon: FileText,
@@ -701,7 +810,16 @@ export function PripremiClient() {
                               className="w-4 h-4 text-[#008081] flex-shrink-0 mt-0.5"
                               aria-hidden="true"
                             />
-                            {label === "Инструктор" && typeof value === "string" && value.includes(",") ? (
+                            {label === "Термини" && typeof value === "string" ? (
+                              <div>
+                                <span className="font-medium block">Термини:</span>
+                                <ul className="list-disc pl-4 mt-1 space-y-0.5">
+                                  {value.split(",").map((v) => (
+                                    <li key={v.trim()}>{v.trim()}</li>
+                                  ))}
+                                </ul>
+                              </div>
+                            ) : label === "Инструктор" && typeof value === "string" && value.includes(",") ? (
                               <div>
                                 <span className="font-medium block">Инструктори:</span>
                                 <ul className="list-disc pl-4 mt-1 space-y-0.5">
@@ -762,8 +880,13 @@ export function PripremiClient() {
                   </div>
                 )}
                 {availableMonths.map((monthData) => {
-                  const monthSessions = filtered.filter((session) =>
-                    getSessionRangeForMonth(session, monthData.month, monthData.year)
+                  const monthSessions = filtered.filter(
+                    (session) =>
+                      getSessionRangesForMonth(
+                        session,
+                        monthData.month,
+                        monthData.year,
+                      ).length > 0,
                   );
                   const calendarWeeks = buildCalendarWeeks(monthData.month, monthData.year);
                   
@@ -798,9 +921,13 @@ export function PripremiClient() {
                             monthData.month,
                             monthData.year,
                           );
+                          const weekRowCount = weekEvents.reduce(
+                            (max, event) => Math.max(max, event.row + 1),
+                            0,
+                          );
                           const weekHeight = Math.max(
                             100,
-                            34 + weekEvents.length * 22,
+                            34 + weekRowCount * 22,
                           );
                           return (
                             <div key={wi} className="relative mb-1">
@@ -831,13 +958,13 @@ export function PripremiClient() {
                               {/* Event bars overlay */}
                               {weekEvents.length > 0 && (
                                 <div className="absolute inset-0 pointer-events-none">
-                                  {weekEvents.map((ev, ei) => {
+                                  {weekEvents.map((ev) => {
                                     const color = getEventColor(ev.session);
                                     const isSelected =
                                       selectedEvent?.id === ev.session.id;
                                     return (
                                       <button
-                                        key={ev.session.id}
+                                        key={ev.key}
                                         onClick={() => setSelectedEvent(ev.session)}
                                         aria-pressed={isSelected}
                                         className="pointer-events-auto cursor-pointer hover:opacity-85 transition-opacity text-left truncate rounded"
@@ -845,7 +972,7 @@ export function PripremiClient() {
                                           position: "absolute",
                                           left: `calc(${ev.startCol} / 7 * 100% + ${ev.startCol} * 0.25rem)`,
                                           right: `calc((6 - ${ev.endCol}) / 7 * 100% + (6 - ${ev.endCol}) * 0.25rem)`,
-                                          top: `${28 + ei * 20}px`,
+                                          top: `${28 + ev.row * 20}px`,
                                           height: 18,
                                           background: isSelected
                                             ? color.text
@@ -909,8 +1036,7 @@ export function PripremiClient() {
                       {[
                         {
                           Icon: CalendarIcon,
-                          label: "Датум",
-                          value: selectedEvent.startDate,
+                          ...getScheduleRow(selectedEvent, "Датум"),
                         },
                         {
                           Icon: Clock,
@@ -939,7 +1065,10 @@ export function PripremiClient() {
                               <p className="text-xs font-medium text-[#1E424A]/60 mb-0.5">
                                 {label === "Инструктор" && typeof value === "string" && value.includes(",") ? "Инструктори" : label}
                               </p>
-                              {label === "Инструктор" && typeof value === "string" && value.includes(",") ? (
+                              {typeof value === "string" &&
+                              (label === "Термини" ||
+                                (label === "Инструктор" &&
+                                  value.includes(","))) ? (
                                 <ul className="list-disc pl-4 text-sm font-semibold text-[#1E424A] space-y-0.5 mt-1">
                                   {value.split(",").map((v) => (
                                     <li key={v.trim()}>{v.trim()}</li>

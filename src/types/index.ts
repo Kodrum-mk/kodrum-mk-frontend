@@ -13,6 +13,15 @@ export interface Course {
   thumbnail: string;
 }
 
+export interface PrepDateBlock {
+  startIso: string;
+  endIso: string;
+  days: number;
+  /** Human label for the block, e.g. "11ти – 12ти Септември". */
+  label: string;
+  note?: string;
+}
+
 export interface PrepSession {
   id: string;
   subjectId?: string;
@@ -24,6 +33,10 @@ export interface PrepSession {
   startDateIso?: string;
   endDateIso?: string;
   startDate: string;
+  /** Every run of class days, in chronological order. Empty for single-date subjects. */
+  dateBlocks?: PrepDateBlock[];
+  /** All block labels joined, e.g. "11ти – 12ти Септември, 18ти – 19ти Септември". */
+  datesLabel?: string;
   examDate?: string;
   duration?: string | null;
   price?: number;

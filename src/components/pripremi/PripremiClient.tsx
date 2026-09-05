@@ -155,22 +155,60 @@ const defaultEventPalette = [
   { bg: "rgba(168, 85, 247, 0.15)", text: "#A855F7" },
 ];
 
-function getStableEventColorIndex(session: PrepSession) {
-  const key = `${session.id}-${session.title}`;
-  let hash = 0;
+type SessionRange = { key: string; startIso: string; endIso: string };
 
-  for (let index = 0; index < key.length; index++) {
-    hash = (hash * 31 + key.charCodeAt(index)) % defaultEventPalette.length;
-  }
-
-  return hash;
+function rangesOverlap(left: SessionRange[], right: SessionRange[]) {
+  return left.some((a) =>
+    right.some((b) => a.startIso <= b.endIso && b.startIso <= a.endIso),
+  );
 }
 
-function getEventColor(session: PrepSession) {
-  return (
-    eventColors[session.id] ??
-    defaultEventPalette[getStableEventColorIndex(session)]
-  );
+/**
+ * Assigns a palette colour to every subject so that two subjects running on the
+ * same days never look alike — the previous hash of the id collided blindly and
+ * painted simultaneous sessions the same colour.
+ *
+ * Colouring is greedy over the subjects in date order: each takes the first
+ * palette entry no overlapping subject already uses. Because it runs over the
+ * full session list rather than the filtered one, a subject keeps its colour
+ * while the visitor searches or switches faculty.
+ */
+function buildEventColorMap(sessions: PrepSession[]) {
+  const ordered = [...sessions].sort((a, b) => {
+    const left = a.startDateIso ?? "9999-12-31";
+    const right = b.startDateIso ?? "9999-12-31";
+    return left === right ? a.id.localeCompare(b.id) : left.localeCompare(right);
+  });
+
+  const placed: { ranges: SessionRange[]; colorIndex: number }[] = [];
+  const colors = new Map<string, (typeof defaultEventPalette)[number]>();
+
+  ordered.forEach((session) => {
+    const ranges = getSessionRanges(session);
+    const taken = new Set(
+      placed
+        .filter((other) => rangesOverlap(ranges, other.ranges))
+        .map((other) => other.colorIndex),
+    );
+
+    let colorIndex = 0;
+    while (colorIndex < defaultEventPalette.length && taken.has(colorIndex)) {
+      colorIndex += 1;
+    }
+    // More mutually overlapping subjects than palette entries: wrap rather than
+    // run off the end.
+    if (colorIndex === defaultEventPalette.length) {
+      colorIndex = placed.length % defaultEventPalette.length;
+    }
+
+    placed.push({ ranges, colorIndex });
+    colors.set(
+      session.id,
+      eventColors[session.id] ?? defaultEventPalette[colorIndex],
+    );
+  });
+
+  return colors;
 }
 
 function getEventsForWeek(
@@ -497,6 +535,8 @@ export function PripremiClient() {
       controller.abort();
     };
   }, []);
+
+  const eventColorMap = useMemo(() => buildEventColorMap(sessions), [sessions]);
 
   const filters = useMemo(() => {
     const facultySet = new Set(sessions.map((session) => session.faculty));
@@ -959,7 +999,9 @@ export function PripremiClient() {
                               {weekEvents.length > 0 && (
                                 <div className="absolute inset-0 pointer-events-none">
                                   {weekEvents.map((ev) => {
-                                    const color = getEventColor(ev.session);
+                                    const color =
+                                      eventColorMap.get(ev.session.id) ??
+                                      defaultEventPalette[0];
                                     const isSelected =
                                       selectedEvent?.id === ev.session.id;
                                     return (

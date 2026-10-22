@@ -4,6 +4,12 @@ const nextConfig: NextConfig = {
   async redirects() {
     return [
       {
+        source: "/:path*",
+        has: [{ type: "host", value: "ecourses.kodrum.mk" }],
+        destination: "https://ecourses.kodrum.dev/:path*",
+        permanent: false,
+      },
+      {
         source: "/ig",
         destination:
           "/?utm_source=instagram&utm_medium=social&utm_campaign=instagram_bio",

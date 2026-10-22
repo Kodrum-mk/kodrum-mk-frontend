@@ -15,6 +15,11 @@ const nextConfig: NextConfig = {
           "/?utm_source=instagram&utm_medium=paid_social&utm_campaign=instagram_ad",
         permanent: false,
       },
+      {
+        source: "/uci",
+        destination: "https://ecourses.kodrum.dev",
+        permanent: false,
+      },
     ];
   },
   images: {

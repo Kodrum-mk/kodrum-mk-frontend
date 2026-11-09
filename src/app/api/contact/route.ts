@@ -19,6 +19,23 @@ function truncateMessage(message: string) {
   return message.length > 3900 ? `${message.slice(0, 3900)}...` : message;
 }
 
+// Mattermost (chat.kodrum.dev) first when MATTERMOST_WEBHOOK_URL is set; Telegram when it is not,
+// or when the Mattermost post fails (Mattermost runs on one home server, so it can be down).
+async function postToMattermost(text: string) {
+  const hookUrl = process.env.MATTERMOST_WEBHOOK_URL?.trim();
+  if (!hookUrl) return false;
+  try {
+    const response = await fetch(hookUrl, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "User-Agent": "kodrum-mk-frontend" },
+      body: JSON.stringify({ text }),
+    });
+    return response.ok;
+  } catch {
+    return false;
+  }
+}
+
 export async function POST(request: Request) {
   const ip = request.headers.get("x-forwarded-for") || "unknown";
   if (!rateLimit(ip)) {
@@ -31,9 +48,10 @@ export async function POST(request: Request) {
     const topicId = process.env.TELEGRAM_TOPIC_ID?.trim();
     const parsedTopicId = topicId ? Number(topicId) : null;
 
-    if (!botToken || !chatId) {
+    const hasMattermost = Boolean(process.env.MATTERMOST_WEBHOOK_URL?.trim());
+    if (!hasMattermost && (!botToken || !chatId)) {
       return NextResponse.json(
-        { error: "Telegram is not configured." },
+        { error: "Notifications are not configured." },
         { status: 500 },
       );
     }
@@ -53,6 +71,24 @@ export async function POST(request: Request) {
       );
     }
 
+    const text = truncateMessage(
+      [
+        "Нова порака од контакт форма (New Contact Form Message)",
+        `Name: ${firstName} ${lastName}`,
+        `Email: ${email}`,
+        `Subject: ${subject || "-"}`,
+        `Message: ${message}`,
+      ].join("\n"),
+    );
+
+    if (await postToMattermost(text)) {
+      return NextResponse.json({ ok: true });
+    }
+
+    if (!botToken || !chatId) {
+      return NextResponse.json({ error: "Failed to send." }, { status: 502 });
+    }
+
     const telegramResponse = await fetch(
       `${TELEGRAM_API_BASE}/bot${botToken}/sendMessage`,
       {
@@ -61,15 +97,7 @@ export async function POST(request: Request) {
         body: JSON.stringify({
           chat_id: chatId,
           ...(parsedTopicId != null && !isNaN(parsedTopicId) ? { message_thread_id: parsedTopicId } : {}),
-          text: truncateMessage(
-            [
-              "Нова порака од контакт форма (New Contact Form Message)",
-              `Name: ${firstName} ${lastName}`,
-              `Email: ${email}`,
-              `Subject: ${subject || "-"}`,
-              `Message: ${message}`,
-            ].join("\n"),
-          ),
+          text,
         }),
       },
     );

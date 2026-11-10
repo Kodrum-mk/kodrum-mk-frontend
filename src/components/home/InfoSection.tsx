@@ -1,19 +1,15 @@
-import { InfoQuestions } from "./InfoQuestions";
+import Faq from "@/components/ui/Faq";
+import { HOME_FAQ } from "@/data/faq";
 import { Testimonials } from "./Testimonials";
 
+/** Student testimonials, then the FAQ. */
 export function InfoSection() {
   return (
-    <section className="py-16 px-4 sm:px-6 lg:px-8 bg-[#F2F0E7] w-full">
-      <div className="max-w-7xl mx-auto">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16">
-          <div>
-            <InfoQuestions />
-          </div>
-          <div>
-            <Testimonials />
-          </div>
-        </div>
-      </div>
-    </section>
+    <>
+      <section className="u-wrap pb-16 sm:pb-20">
+        <Testimonials />
+      </section>
+      <Faq items={HOME_FAQ} id="home-faq" className="u-wrap pb-20" />
+    </>
   );
 }

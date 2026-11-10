@@ -16,6 +16,13 @@ export function CookieNotice() {
     }
   }, []);
 
+  // lets CSS lift the floating contact button above the notice (globals.css)
+  useEffect(() => {
+    if (!isVisible) return;
+    document.documentElement.setAttribute("data-cookie-notice", "");
+    return () => document.documentElement.removeAttribute("data-cookie-notice");
+  }, [isVisible]);
+
   function acceptNotice() {
     try {
       window.localStorage.setItem(STORAGE_KEY, "true");
@@ -29,13 +36,17 @@ export function CookieNotice() {
   if (!isVisible) return null;
 
   return (
-    <div className="fixed inset-x-4 bottom-4 z-50 mx-auto max-w-3xl rounded-lg border border-[#1E424A]/10 bg-white px-4 py-3 text-[#1E424A] shadow-lg">
+    <div
+      role="region"
+      aria-label="Колачиња"
+      className="fixed inset-x-3 bottom-3 z-50 mx-auto max-w-3xl rounded-3xl border border-line bg-white px-5 py-4 text-ink shadow-[0_24px_60px_-20px_rgba(30,66,74,.55)] sm:inset-x-4 sm:bottom-4"
+    >
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <p className="text-sm leading-relaxed">
+        <p className="text-[15px] leading-relaxed text-body">
           Овој сајт користи колачиња и собира податоци за аналитика.{" "}
           <Link
             href="/privatnost"
-            className="font-semibold text-[#008081] hover:text-[#006566]"
+            className="font-bold text-teal-dk underline underline-offset-4 hover:text-teal"
           >
             Политика за приватност
           </Link>
@@ -44,7 +55,7 @@ export function CookieNotice() {
         <button
           type="button"
           onClick={acceptNotice}
-          className="shrink-0 rounded-lg bg-[#008081] px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-[#006566]"
+          className="shrink-0 rounded-xl bg-teal px-6 py-2.5 text-[15px] font-black text-white shadow-[0_4px_0_var(--color-teal-dk)] transition hover:translate-y-0.5 hover:shadow-[0_2px_0_var(--color-teal-dk)]"
         >
           Во ред
         </button>

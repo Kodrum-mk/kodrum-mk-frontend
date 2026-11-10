@@ -1,84 +1,143 @@
 import type { Metadata } from "next";
-import { Mail, Phone, MapPin, Facebook, Instagram } from "lucide-react";
+import { pageMeta } from "@/lib/seo";
+import JsonLd from "@/components/seo/JsonLd";
+import { breadcrumbLd } from "@/lib/structured";
 import { ContactForm } from "@/components/kontakt/ContactForm";
+import ContactButtons from "@/components/contact/ContactButtons";
+import ContactIcon from "@/components/contact/icons";
+import Faq from "@/components/ui/Faq";
+import Reveal from "@/components/ui/Reveal";
+import SectionHeading from "@/components/ui/SectionHeading";
+import { KONTAKT_FAQ } from "@/data/faq";
+import { ADDRESS, EMAIL, PHONE, SOCIALS } from "@/lib/site";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMeta({
   title: "Контакт",
   description:
     "Контактирај нè за прашања, пријавување или поддршка. Ние сме тука да помогнеме!",
-};
+  path: "/kontakt",
+});
 
-const contactInfo = [
-  { Icon: Mail, label: "Email", value: "kodrum.mk@gmail.com", href: "mailto:kodrum.mk@gmail.com" },
-  { Icon: Phone, label: "Телефон", value: "+389 75 295 582", href: "tel:+38975295582" },
-  { Icon: MapPin, label: "Локација", value: "Скопје, Македонија", href: null },
+const contactInfo: {
+  icon: "email" | "call" | "pin";
+  label: string;
+  value: string;
+  href: string | null;
+}[] = [
+  ...(EMAIL
+    ? [
+        {
+          icon: "email" as const,
+          label: "Email",
+          value: EMAIL,
+          href: `mailto:${EMAIL}`,
+        },
+      ]
+    : []),
+  {
+    icon: "call",
+    label: "Телефон",
+    value: PHONE.display,
+    href: `tel:${PHONE.e164}`,
+  },
+  { icon: "pin", label: "Локација", value: ADDRESS.line, href: null },
 ];
 
 export default function KontaktPage() {
   return (
-    <div className="min-h-screen bg-white">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-start">
+    <>
+      <JsonLd data={breadcrumbLd("Контакт", "/kontakt")} />
+      <div className="u-wrap pb-16 pt-6 sm:pb-20 sm:pt-10">
+        <div className="grid grid-cols-1 items-start gap-10 lg:grid-cols-2 lg:gap-14">
           {/* Left */}
-          <div>
-            <h1 className="text-4xl md:text-5xl font-bold text-[#1E424A] mb-6">
-              Контакт
-            </h1>
-            <p className="text-lg text-[#1E424A]/70 mb-10 leading-relaxed">
-              Имате прашање или сакате да се пријавите за курс? Контактирајте нè
-              директно и ние ќе ви одговориме во најкраток рок.
-            </p>
+          <Reveal>
+            <SectionHeading
+              as="h1"
+              align="left"
+              title="Контакт"
+              intro="Имате прашање или сакате да се пријавите за курс? Контактирајте нè директно и ние ќе ви одговориме во најкраток рок."
+              className="mb-8 max-w-xl"
+            />
 
-            <div className="space-y-5 mb-10">
-              {contactInfo.map(({ Icon, label, value, href }) => (
-                <div key={label} className="flex items-start gap-4">
-                  <div className="w-12 h-12 rounded-lg bg-[#008081]/10 flex items-center justify-center flex-shrink-0">
-                    <Icon className="w-6 h-6 text-[#008081]" aria-hidden="true" />
-                  </div>
+            <ul className="mb-8 space-y-5">
+              {contactInfo.map(({ icon, label, value, href }) => (
+                <li key={label} className="flex items-center gap-4">
+                  <span
+                    aria-hidden
+                    className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-teal-lt text-teal-dk"
+                  >
+                    {icon === "pin" ? (
+                      <svg
+                        viewBox="0 0 24 24"
+                        className="h-6 w-6"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="1.9"
+                        strokeLinejoin="round"
+                      >
+                        <path d="M12 21s7-6.2 7-11.5A7 7 0 0 0 5 9.5C5 14.8 12 21 12 21Z" />
+                        <circle cx="12" cy="9.5" r="2.4" />
+                      </svg>
+                    ) : (
+                      <ContactIcon name={icon} className="h-6 w-6" />
+                    )}
+                  </span>
                   <div>
-                    <p className="text-sm font-medium text-[#1E424A]/60 mb-0.5">{label}</p>
+                    <p className="text-[14px] font-bold text-muted">{label}</p>
                     {href ? (
                       <a
                         href={href}
-                        className="text-base font-semibold text-[#1E424A] hover:text-[#008081] transition-colors"
+                        className="break-all text-[18px] font-extrabold text-ink transition hover:text-teal"
                       >
                         {value}
                       </a>
                     ) : (
-                      <p className="text-base font-semibold text-[#1E424A]">{value}</p>
+                      <p className="text-[18px] font-extrabold text-ink">
+                        {value}
+                      </p>
                     )}
                   </div>
-                </div>
+                </li>
               ))}
-            </div>
+            </ul>
 
-            <div>
-              <p className="text-sm font-medium text-[#1E424A]/60 mb-4">
-                Следи нè на:
-              </p>
-              <div className="flex gap-3">
-                {[
-                  { href: "https://www.facebook.com/61583240054450/", Icon: Facebook, label: "Facebook" },
-                  { href: "https://www.instagram.com/kodrum.mk/", Icon: Instagram, label: "Instagram" },
-                ].map(({ href, Icon, label }) => (
+            <p className="mb-3 text-[14px] font-bold text-muted">
+              Следи нè на:
+            </p>
+            <ul className="mb-8 flex gap-3">
+              {SOCIALS.map((s) => (
+                <li key={s.id}>
                   <a
-                    key={label}
-                    href={href}
+                    href={s.href}
                     target="_blank"
                     rel="noopener noreferrer"
-                    aria-label={label}
-                    className="w-12 h-12 rounded-lg bg-[#1E424A] hover:bg-[#008081] text-white flex items-center justify-center transition-colors"
+                    aria-label={s.label}
+                    title={s.label}
+                    className="grid h-12 w-12 place-items-center rounded-full border border-line bg-white text-ink transition hover:-translate-y-0.5 hover:border-teal hover:bg-teal hover:text-white"
                   >
-                    <Icon className="w-6 h-6" />
+                    <ContactIcon name={s.id} className="h-6 w-6" />
                   </a>
-                ))}
-              </div>
-            </div>
-          </div>
+                </li>
+              ))}
+            </ul>
 
-          <ContactForm />
+            <p className="mb-3 text-[14px] font-bold text-muted">
+              Или јавете ни се директно:
+            </p>
+            <ContactButtons skip={["email", "discord"]} />
+          </Reveal>
+
+          <Reveal delay={120}>
+            <ContactForm />
+          </Reveal>
         </div>
       </div>
-    </div>
+      <Faq
+        items={KONTAKT_FAQ}
+        id="kontakt-faq"
+        className="u-wrap pb-20"
+        contactCard={false}
+      />
+    </>
   );
 }

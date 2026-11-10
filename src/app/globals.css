@@ -1,17 +1,45 @@
 @import "tailwindcss";
 
-@theme inline {
-  --font-sans: "Inter", "Inter Fallback";
-  --font-mono: "JetBrains Mono", monospace;
+/*
+ * Design tokens (shared with Kodrum Junior). Each colour becomes a utility (bg-teal, text-ink,
+ * border-line) and a CSS variable (var(--color-teal-dk)).
+ */
+@theme {
+  --font-sans: var(--font-manrope), system-ui, sans-serif;
 
+  --color-ink: #1e424a; /* headings */
+  --color-body: #41595f;
+  --color-muted: #6e858a;
+
+  --color-teal: #008081; /* primary */
+  --color-teal-dk: #00696a;
+  --color-teal-lt: #e2f1f1;
+  --color-yellow: #facc0b; /* secondary */
+  --color-yellow-lt: #fff6d4;
+
+  --color-paper: #ffffff;
+  --color-paper-2: #f4f8f8;
+  --color-paper-3: #eaf2f2;
+  --color-line: #dbe7e8;
+
+  /* Old names, kept until every page uses the tokens above. */
   --color-brand: #008081;
   --color-brand-dark: #006566;
   --color-dark: #1e424a;
   --color-cream: #f2f0e7;
   --color-accent-yellow: #facc0b;
+}
 
-  --color-background: #ffffff;
-  --color-foreground: #1e424a;
+:root {
+  --gutter: 16px;
+  /* height of the floating navbar (pill + its top gap); the page backdrop runs under it */
+  --nav-h: 68px;
+  color-scheme: light;
+}
+@media (min-width: 640px) {
+  :root {
+    --nav-h: 80px;
+  }
 }
 
 @layer base {
@@ -20,15 +48,18 @@
     border-color: rgba(0, 0, 0, 0.1);
   }
 
+  /* clip, not hidden: hidden turns <body> into a scroll container and the sticky navbar stops following. */
   html {
     scroll-behavior: smooth;
+    overflow-x: clip;
   }
 
   body {
-    background-color: #ffffff;
-    color: #1e424a;
-    font-family: var(--font-sans), system-ui, sans-serif;
+    background-color: var(--color-paper);
+    color: var(--color-body);
+    font-family: var(--font-sans);
     -webkit-font-smoothing: antialiased;
+    overflow-x: clip;
   }
 
   input.amount-input::-webkit-outer-spin-button,
@@ -39,5 +70,88 @@
 
   input.amount-input {
     -moz-appearance: textfield;
+  }
+}
+
+/* Page container: 1200px, 16px gutters. */
+.u-wrap {
+  width: 100%;
+  max-width: 1200px;
+  margin-inline: auto;
+  padding-inline: var(--gutter);
+}
+
+.text-balance {
+  text-wrap: balance;
+}
+
+/*
+ * Floating navbar. The header is sticky and transparent; it pulls <main> up under itself and <main>
+ * gets the same height as top padding, so the page backdrop reaches the top of the screen.
+ */
+.site-header:has(+ main) {
+  margin-bottom: calc(var(--nav-h) * -1);
+}
+.site-header + main:not(.nav-flush) {
+  padding-top: var(--nav-h);
+}
+/* Pages whose <main> starts with full-bleed hero sections. */
+.nav-flush > section:first-of-type {
+  padding-top: calc(var(--nav-h) + 3.75rem);
+}
+
+/* Reveal on scroll (see components/ui/Reveal.tsx). The noscript rule in the layout shows it without JS. */
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(26px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+.reveal {
+  opacity: 0;
+}
+.reveal.in {
+  animation: rise 0.7s cubic-bezier(0.2, 0.7, 0.3, 1) both;
+}
+
+@keyframes step-in {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+.step-in {
+  animation: step-in 0.35s cubic-bezier(0.2, 0.7, 0.3, 1) both;
+}
+
+/* Marquee on the home page (framer-motion drives it; this only disables it for reduced motion). */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+  .reveal {
+    opacity: 1 !important;
+  }
+}
+
+/* Cookie notice visible: lift the floating contact button above it (set by CookieNotice). */
+html[data-cookie-notice] .contact-fab {
+  bottom: 12.5rem;
+}
+@media (min-width: 640px) {
+  html[data-cookie-notice] .contact-fab {
+    bottom: 6.5rem;
   }
 }

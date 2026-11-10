@@ -1,10 +1,15 @@
 import type { Metadata } from "next";
+import { pageMeta } from "@/lib/seo";
+import JsonLd from "@/components/seo/JsonLd";
+import { breadcrumbLd } from "@/lib/structured";
+import { LegalPage } from "@/components/shared/LegalPage";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMeta({
   title: "Услови за користење",
   description:
     "Прочитај ги условите за користење на Кодрум платформата и услугите.",
-};
+  path: "/uslovi",
+});
 
 const sections = [
   {
@@ -51,27 +56,14 @@ const sections = [
 
 export default function UsloviPage() {
   return (
-    <div className="min-h-screen bg-white">
-      <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-        <h1 className="text-4xl md:text-5xl font-bold text-[#1E424A] mb-4">
-          Услови за користење
-        </h1>
-        {/* Update this date when the policy content changes */}
-        <p className="text-sm text-[#1E424A]/50 mb-10">
-          Последно ажурирање: Јануари 2025
-        </p>
-
-        <div className="space-y-8">
-          {sections.map((s) => (
-            <section key={s.title}>
-              <h2 className="text-xl font-bold text-[#1E424A] mb-3">
-                {s.title}
-              </h2>
-              <p className="text-[#1E424A]/70 leading-relaxed">{s.content}</p>
-            </section>
-          ))}
-        </div>
-      </div>
-    </div>
+    <>
+      <JsonLd data={breadcrumbLd("Услови за користење", "/uslovi")} />
+      <LegalPage
+        title="Услови за користење"
+        // Update this date when the policy content changes
+        updated="Последно ажурирање: Јануари 2025"
+        sections={sections}
+      />
+    </>
   );
 }

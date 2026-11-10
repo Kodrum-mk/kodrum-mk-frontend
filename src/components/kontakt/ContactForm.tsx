@@ -20,6 +20,9 @@ const initialState: FormState = {
   message: "",
 };
 
+const inputCls =
+  "w-full rounded-2xl border-2 border-line bg-white px-4 py-3 text-[16px] text-ink outline-none transition placeholder:text-muted/70 focus:border-teal focus:ring-4 focus:ring-teal/20";
+
 function isValidEmail(email: string) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 }
@@ -27,7 +30,10 @@ function isValidEmail(email: string) {
 export function ContactForm() {
   const [form, setForm] = useState<FormState>(initialState);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [status, setStatus] = useState<{ type: "success" | "error"; message: string } | null>(null);
+  const [status, setStatus] = useState<{
+    type: "success" | "error";
+    message: string;
+  } | null>(null);
   const hasTrackedStart = useRef(false);
 
   function trackFormStart() {
@@ -67,7 +73,8 @@ export function ContactForm() {
     } catch (error) {
       setStatus({
         type: "error",
-        message: error instanceof Error ? error.message : "Failed to send message.",
+        message:
+          error instanceof Error ? error.message : "Failed to send message.",
       });
       trackEvent("contact_form_error", { form_name: "contact" });
     } finally {
@@ -80,8 +87,8 @@ export function ContactForm() {
   }
 
   return (
-    <div className="bg-[#F2F0E7] rounded-2xl p-8 shadow-lg">
-      <h2 className="text-2xl font-bold text-[#1E424A] mb-6">
+    <div className="rounded-3xl border-2 border-line bg-white p-6 shadow-[0_24px_60px_-34px_rgba(30,66,74,.5)] sm:p-8">
+      <h2 className="mb-6 text-[26px] font-extrabold tracking-[-.01em] text-ink">
         Send a Message
       </h2>
       <form
@@ -94,7 +101,7 @@ export function ContactForm() {
           <div>
             <label
               htmlFor="firstName"
-              className="block text-sm font-medium text-[#1E424A] mb-1.5"
+              className="mb-1.5 block text-[15px] font-bold text-ink"
             >
               First Name *
             </label>
@@ -106,13 +113,13 @@ export function ContactForm() {
               value={form.firstName}
               onChange={(e) => updateField("firstName", e.target.value)}
               placeholder="Your First Name"
-              className="w-full px-4 py-3 rounded-lg border border-[#1E424A]/20 bg-white focus:outline-none focus:border-[#008081] focus:ring-2 focus:ring-[#008081]/20 text-[#1E424A] placeholder:text-[#1E424A]/40 transition-all text-sm"
+              className={inputCls}
             />
           </div>
           <div>
             <label
               htmlFor="lastName"
-              className="block text-sm font-medium text-[#1E424A] mb-1.5"
+              className="mb-1.5 block text-[15px] font-bold text-ink"
             >
               Last Name *
             </label>
@@ -124,14 +131,14 @@ export function ContactForm() {
               value={form.lastName}
               onChange={(e) => updateField("lastName", e.target.value)}
               placeholder="Your Last Name"
-              className="w-full px-4 py-3 rounded-lg border border-[#1E424A]/20 bg-white focus:outline-none focus:border-[#008081] focus:ring-2 focus:ring-[#008081]/20 text-[#1E424A] placeholder:text-[#1E424A]/40 transition-all text-sm"
+              className={inputCls}
             />
           </div>
         </div>
         <div>
           <label
             htmlFor="email"
-            className="block text-sm font-medium text-[#1E424A] mb-1.5"
+            className="mb-1.5 block text-[15px] font-bold text-ink"
           >
             Email *
           </label>
@@ -143,13 +150,13 @@ export function ContactForm() {
             value={form.email}
             onChange={(e) => updateField("email", e.target.value)}
             placeholder="you@email.com"
-            className="w-full px-4 py-3 rounded-lg border border-[#1E424A]/20 bg-white focus:outline-none focus:border-[#008081] focus:ring-2 focus:ring-[#008081]/20 text-[#1E424A] placeholder:text-[#1E424A]/40 transition-all text-sm"
+            className={inputCls}
           />
         </div>
         <div>
           <label
             htmlFor="subject"
-            className="block text-sm font-medium text-[#1E424A] mb-1.5"
+            className="mb-1.5 block text-[15px] font-bold text-ink"
           >
             Subject
           </label>
@@ -160,13 +167,13 @@ export function ContactForm() {
             value={form.subject}
             onChange={(e) => updateField("subject", e.target.value)}
             placeholder="Message Subject"
-            className="w-full px-4 py-3 rounded-lg border border-[#1E424A]/20 bg-white focus:outline-none focus:border-[#008081] focus:ring-2 focus:ring-[#008081]/20 text-[#1E424A] placeholder:text-[#1E424A]/40 transition-all text-sm"
+            className={inputCls}
           />
         </div>
         <div>
           <label
             htmlFor="message"
-            className="block text-sm font-medium text-[#1E424A] mb-1.5"
+            className="mb-1.5 block text-[15px] font-bold text-ink"
           >
             Message *
           </label>
@@ -178,15 +185,16 @@ export function ContactForm() {
             value={form.message}
             onChange={(e) => updateField("message", e.target.value)}
             placeholder="Write your message here..."
-            className="w-full px-4 py-3 rounded-lg border border-[#1E424A]/20 bg-white focus:outline-none focus:border-[#008081] focus:ring-2 focus:ring-[#008081]/20 text-[#1E424A] placeholder:text-[#1E424A]/40 transition-all resize-none text-sm"
+            className={`${inputCls} resize-none`}
           />
         </div>
         {status && (
           <div
-            className={`rounded-lg px-4 py-3 text-sm flex justify-between items-center ${
+            role={status.type === "error" ? "alert" : "status"}
+            className={`flex items-center justify-between rounded-2xl border-2 px-4 py-3 text-[16px] font-semibold text-ink ${
               status.type === "success"
-                ? "bg-[#008081]/10 text-[#1E424A]"
-                : "bg-[#FACC0B]/15 text-[#1E424A]"
+                ? "border-teal/30 bg-teal-lt"
+                : "border-yellow bg-yellow-lt"
             }`}
           >
             <span>{status.message}</span>
@@ -195,7 +203,7 @@ export function ContactForm() {
         <button
           type="submit"
           disabled={isSubmitting}
-          className="w-full bg-[#008081] hover:bg-[#006566] disabled:opacity-70 text-white font-medium py-3.5 px-6 rounded-lg transition-colors shadow-md text-sm"
+          className="w-full rounded-xl bg-teal px-6 py-4 text-[16px] font-black tracking-wide text-white shadow-[0_4px_0_var(--color-teal-dk)] outline-none transition hover:translate-y-0.5 hover:shadow-[0_2px_0_var(--color-teal-dk)] focus-visible:ring-4 focus-visible:ring-teal/30 disabled:cursor-not-allowed disabled:opacity-70"
         >
           {isSubmitting ? "Sending..." : "Send Message"}
         </button>

@@ -1,28 +1,33 @@
 import type { Metadata } from "next";
+import { pageMeta } from "@/lib/seo";
+import JsonLd from "@/components/seo/JsonLd";
+import { breadcrumbLd } from "@/lib/structured";
 import { PricingSection } from "@/components/promo-paketi/PricingSection";
+import Faq from "@/components/ui/Faq";
+import SectionHeading from "@/components/ui/SectionHeading";
+import { PROMO_FAQ } from "@/data/faq";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMeta({
   title: "Промо пакети",
   description:
     "Специјални промо понуди, комбинирани пакети и попусти за испитна подготовка.",
-};
+  path: "/promo-paketi",
+});
 
 export default function PromoPaketiPage() {
   return (
-    <div className="bg-white min-h-screen">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div className="text-center max-w-3xl mx-auto mb-4">
-          <h1 className="text-4xl md:text-5xl font-bold text-[#1E424A] mb-6">
-            Промо пакети
-          </h1>
-          <p className="text-lg text-[#1E424A]/70 leading-relaxed">
-            Разгледајте ги нашите специјални промо понуди, комбинирани пакети и
-            подготовки со попуст. Изберете го најдобриот пакет за вас и вашите
-            пријатели и заштедете на вашето образование.
-          </p>
-        </div>
+    <>
+      <JsonLd data={breadcrumbLd("Промо пакети", "/promo-paketi")} />
+      <div className="u-wrap pt-6 sm:pt-10">
+        <SectionHeading
+          as="h1"
+          title="Промо пакети"
+          intro="Разгледајте ги нашите специјални промо понуди, комбинирани пакети и подготовки со попуст. Изберете го најдобриот пакет за вас и вашите пријатели и заштедете на вашето образование."
+          className="max-w-3xl"
+        />
       </div>
       <PricingSection />
-    </div>
+      <Faq items={PROMO_FAQ} id="promo-faq" className="u-wrap pb-20" />
+    </>
   );
 }

@@ -55,23 +55,23 @@ function isValidEmail(email: string) {
 
 function SessionCardSkeleton() {
   return (
-    <div className="bg-white border-2 border-[#1E424A]/10 rounded-2xl p-6 shadow-lg min-h-[540px] animate-pulse">
+    <div className="rounded-3xl border-2 border-line bg-white p-6 shadow-[0_24px_50px_-40px_rgba(30,66,74,.6)] min-h-[540px] animate-pulse">
       <div className="flex items-center justify-between mb-4">
-        <div className="h-6 w-28 rounded-full bg-[#008081]/10" />
-        <div className="h-6 w-20 rounded bg-[#FACC0B]/20" />
+        <div className="h-6 w-28 rounded-full bg-teal-lt" />
+        <div className="h-6 w-20 rounded bg-yellow/30" />
       </div>
-      <div className="h-7 w-3/4 rounded bg-[#1E424A]/10 mb-3" />
+      <div className="h-7 w-3/4 rounded bg-paper-3 mb-3" />
       <div className="space-y-2 mb-5">
-        <div className="h-4 w-full rounded bg-[#1E424A]/10" />
-        <div className="h-4 w-5/6 rounded bg-[#1E424A]/10" />
-        <div className="h-4 w-2/3 rounded bg-[#1E424A]/10" />
+        <div className="h-4 w-full rounded bg-paper-3" />
+        <div className="h-4 w-5/6 rounded bg-paper-3" />
+        <div className="h-4 w-2/3 rounded bg-paper-3" />
       </div>
-      <div className="space-y-3 mb-5 pb-5 border-b border-[#1E424A]/10">
+      <div className="space-y-3 mb-5 pb-5 border-b border-line">
         {[0, 1, 2, 3].map((item) => (
-          <div key={item} className="h-4 w-4/5 rounded bg-[#1E424A]/10" />
+          <div key={item} className="h-4 w-4/5 rounded bg-paper-3" />
         ))}
       </div>
-      <div className="h-11 w-full rounded-lg bg-[#008081]/15 mt-auto" />
+      <div className="h-11 w-full rounded-lg bg-teal/20 mt-auto" />
     </div>
   );
 }
@@ -79,11 +79,11 @@ function SessionCardSkeleton() {
 function CalendarSkeleton() {
   return (
     <div className="grid grid-cols-1 lg:grid-cols-[60%_40%] gap-8">
-      <div className="bg-white border-2 border-[#1E424A]/10 rounded-2xl p-6 shadow-lg animate-pulse">
-        <div className="h-8 w-40 rounded bg-[#1E424A]/10 mb-6" />
+      <div className="rounded-3xl border-2 border-line bg-white p-6 shadow-[0_24px_50px_-40px_rgba(30,66,74,.6)] animate-pulse">
+        <div className="h-8 w-40 rounded bg-paper-3 mb-6" />
         <div className="grid grid-cols-7 gap-1 mb-2">
           {Array.from({ length: 7 }).map((_, index) => (
-            <div key={index} className="h-6 rounded bg-[#1E424A]/10" />
+            <div key={index} className="h-6 rounded bg-paper-3" />
           ))}
         </div>
         <div className="space-y-1">
@@ -92,27 +92,27 @@ function CalendarSkeleton() {
               {Array.from({ length: 7 }).map((__, col) => (
                 <div
                   key={`${row}-${col}`}
-                  className="h-[100px] rounded-lg border border-[#1E424A]/10 bg-[#F2F0E7]/30"
+                  className="h-[100px] rounded-lg border border-line bg-paper-2"
                 />
               ))}
             </div>
           ))}
         </div>
       </div>
-      <div className="bg-white border-2 border-[#1E424A]/10 rounded-2xl p-6 shadow-lg animate-pulse">
-        <div className="h-7 w-48 rounded bg-[#1E424A]/10 mb-5" />
-        <div className="h-6 w-20 rounded bg-[#FACC0B]/20 mb-4" />
-        <div className="h-8 w-3/4 rounded bg-[#1E424A]/10 mb-4" />
+      <div className="rounded-3xl border-2 border-line bg-white p-6 shadow-[0_24px_50px_-40px_rgba(30,66,74,.6)] animate-pulse">
+        <div className="h-7 w-48 rounded bg-paper-3 mb-5" />
+        <div className="h-6 w-20 rounded bg-yellow/30 mb-4" />
+        <div className="h-8 w-3/4 rounded bg-paper-3 mb-4" />
         <div className="space-y-2 mb-4">
-          <div className="h-4 w-full rounded bg-[#1E424A]/10" />
-          <div className="h-4 w-5/6 rounded bg-[#1E424A]/10" />
+          <div className="h-4 w-full rounded bg-paper-3" />
+          <div className="h-4 w-5/6 rounded bg-paper-3" />
         </div>
-        <div className="space-y-3 py-4 border-t border-b border-[#1E424A]/10 mb-4">
+        <div className="space-y-4 border-y border-line py-4 mb-4">
           {[0, 1, 2, 3].map((item) => (
-            <div key={item} className="h-10 w-full rounded bg-[#1E424A]/10" />
+            <div key={item} className="h-10 w-full rounded bg-paper-3" />
           ))}
         </div>
-        <div className="h-11 w-full rounded-lg bg-[#008081]/15" />
+        <div className="h-11 w-full rounded-lg bg-teal/20" />
       </div>
     </div>
   );
@@ -305,7 +305,7 @@ function getRegistrationNotice(session: PrepSession) {
         text: "Уште 3 дена за пријавување",
         cardClass:
           "border-transparent outline outline-2 outline-offset-2 outline-[#FACC0B]",
-        badgeClass: "bg-[#FACC0B]/20 text-[#1E424A] border-[#FACC0B]/60",
+        badgeClass: "bg-yellow-lt text-ink border-yellow/60",
       };
     case 2:
       return {
@@ -715,11 +715,11 @@ export function PripremiClient() {
   return (
     <>
       {/* Search + filter bar */}
-      <div className="bg-[#F2F0E7]/30 py-6 px-4 sm:px-6 lg:px-8 border-b border-[#1E424A]/10">
-        <div className="max-w-7xl mx-auto flex flex-col lg:flex-row gap-4 lg:items-center lg:justify-between">
+      <div className="u-wrap pb-8">
+        <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
           <div className="relative flex-1 max-w-xl">
             <Search
-              className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[#1E424A]/40"
+              className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-muted"
               aria-hidden="true"
             />
             <input
@@ -727,13 +727,13 @@ export function PripremiClient() {
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder="Пребарај припрема, предмет или факултет..."
-              className="w-full pl-10 pr-4 py-3 rounded-lg border border-[#1E424A]/20 text-[#1E424A] placeholder:text-[#1E424A]/40 focus:outline-none focus:border-[#008081] focus:ring-2 focus:ring-[#008081]/20 transition-all bg-white text-sm"
+              className="w-full rounded-full border-2 border-line bg-white py-3.5 pl-12 pr-5 text-[16px] text-ink shadow-[0_12px_32px_-24px_rgba(30,66,74,.5)] outline-none transition placeholder:text-muted/70 focus:border-teal focus:ring-4 focus:ring-teal/20"
             />
           </div>
           <div
             className="flex flex-wrap gap-2"
             role="group"
-            aria-label="Filter prep sessions"
+            aria-label="Филтрирај припреми"
           >
             {filters.map((f) => (
               <button
@@ -741,10 +741,10 @@ export function PripremiClient() {
                 onClick={() => setActiveFilter(f)}
                 aria-pressed={activeFilter === f}
                 className={cn(
-                  "px-4 py-2 rounded-lg font-medium transition-colors text-sm",
+                  "rounded-full px-4 py-2 text-[15px] font-extrabold transition",
                   activeFilter === f
-                    ? "bg-[#008081] text-white shadow-md"
-                    : "bg-white text-[#1E424A] border border-[#1E424A]/20 hover:border-[#008081]",
+                    ? "bg-teal text-white shadow-[0_3px_0_var(--color-teal-dk)]"
+                    : "border-2 border-line bg-white text-ink hover:border-teal",
                 )}
               >
                 {f}
@@ -755,27 +755,27 @@ export function PripremiClient() {
       </div>
 
       {/* Session cards grid */}
-      <div className="py-12 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-7xl mx-auto">
+      <div className="u-wrap pb-16">
+        <div>
           {errorMessage && (
-            <div className="mb-4 rounded-lg border border-[#FACC0B]/50 bg-[#FACC0B]/15 px-4 py-3 text-sm text-[#1E424A]">
+            <div className="mb-6 rounded-2xl border-2 border-yellow bg-yellow-lt px-5 py-4 text-[16px] font-semibold text-ink">
               {errorMessage}
               {isFallbackData && " "}
               {isFallbackData && "Користиме резервни локални податоци."}
             </div>
           )}
           {isLoading ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
               {Array.from({ length: 6 }).map((_, index) => (
                 <SessionCardSkeleton key={index} />
               ))}
             </div>
           ) : filtered.length === 0 ? (
-            <p className="text-center text-[#1E424A]/60 py-12">
+            <p className="py-12 text-center text-[17px] font-semibold text-muted">
               Нема пронајдени припреми.
             </p>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
               {filtered.map((session) => {
                 const notice = getRegistrationNotice(session);
 
@@ -785,35 +785,35 @@ export function PripremiClient() {
                     data-analytics-subject={session.title}
                     data-analytics-cta="booking"
                     className={cn(
-                      "bg-white border-2 border-[#1E424A]/10 rounded-2xl p-6 shadow-lg hover:shadow-xl transition-shadow flex flex-col min-h-[540px]",
+                      "flex min-h-[540px] flex-col rounded-3xl border-2 border-line bg-white p-6 shadow-[0_24px_50px_-40px_rgba(30,66,74,.6)] transition hover:shadow-[0_30px_60px_-34px_rgba(30,66,74,.7)] sm:p-7",
                       notice?.cardClass,
                     )}
                   >
                     <div className="flex items-center justify-between mb-4">
-                      <span className="px-3 py-1 bg-[#008081]/10 text-[#008081] text-xs font-medium rounded-full">
+                      <span className="rounded-full bg-teal-lt px-3 py-1 text-[13px] font-bold text-teal-dk">
                         {session.status}
                       </span>
-                      <span className="px-3 py-1 bg-[#FACC0B]/20 text-[#1E424A] text-xs font-bold rounded">
+                      <span className="rounded-full border border-yellow/60 bg-yellow-lt px-3 py-1 text-[13px] font-extrabold text-ink">
                         {session.faculty}
                       </span>
                     </div>
                     {notice && (
                       <div
                         className={cn(
-                          "mb-3 rounded-lg border px-3 py-2 text-xs font-bold",
+                          "mb-3 rounded-xl border px-3 py-2 text-[13px] font-bold",
                           notice.badgeClass,
                         )}
                       >
                         {notice.text}
                       </div>
                     )}
-                    <h3 className="text-xl font-bold text-[#1E424A] mb-2">
+                    <h3 className="mb-2 text-[22px] font-extrabold leading-snug tracking-[-.01em] text-ink">
                       {session.title}
                     </h3>
-                    <p className="text-sm text-[#1E424A]/70 mb-4 leading-relaxed">
+                    <p className="mb-5 text-[17px] leading-relaxed text-body">
                       {session.description}
                     </p>
-                    <div className="space-y-2 mb-5 pb-5 border-b border-[#1E424A]/10 flex-grow">
+                    <div className="mb-5 flex-grow space-y-3 border-b border-line pb-5">
                       {[
                         {
                           Icon: User,
@@ -844,16 +844,16 @@ export function PripremiClient() {
                         .map(({ Icon, label, value }) => (
                           <div
                             key={label}
-                            className="flex items-start gap-2 text-sm text-[#1E424A]/80"
+                            className="flex items-start gap-3 text-[16px] text-body"
                           >
                             <Icon
-                              className="w-4 h-4 text-[#008081] flex-shrink-0 mt-0.5"
+                              className="mt-1 h-[18px] w-[18px] shrink-0 text-teal"
                               aria-hidden="true"
                             />
                             {label === "Термини" && typeof value === "string" ? (
                               <div>
-                                <span className="font-medium block">Термини:</span>
-                                <ul className="list-disc pl-4 mt-1 space-y-0.5">
+                                <span className="block font-bold text-ink">Термини:</span>
+                                <ul className="mt-1 list-disc space-y-0.5 pl-4">
                                   {value.split(",").map((v) => (
                                     <li key={v.trim()}>{v.trim()}</li>
                                   ))}
@@ -861,30 +861,30 @@ export function PripremiClient() {
                               </div>
                             ) : label === "Инструктор" && typeof value === "string" && value.includes(",") ? (
                               <div>
-                                <span className="font-medium block">Инструктори:</span>
-                                <ul className="list-disc pl-4 mt-1 space-y-0.5">
+                                <span className="block font-bold text-ink">Инструктори:</span>
+                                <ul className="mt-1 list-disc space-y-0.5 pl-4">
                                   {value.split(",").map((v) => (
                                     <li key={v.trim()}>{v.trim()}</li>
                                   ))}
                                 </ul>
                               </div>
                             ) : (
-                              <div className="flex items-center gap-2 overflow-hidden mt-0.5">
-                                <span className="font-medium flex-shrink-0">{label}:</span>
-                                <span className="truncate">{value}</span>
+                              <div className="flex flex-wrap items-baseline gap-x-2">
+                                <span className="shrink-0 font-bold text-ink">{label}:</span>
+                                <span className="min-w-0">{value}</span>
                               </div>
                             )}
                           </div>
                         ))}
                     </div>
                     <PrepPrice price={session.price} className="mb-3 mt-auto" />
-                    <p className="mb-2 text-center text-xs font-medium text-[#1E424A]/60">
+                    <p className="mb-3 text-center text-[14px] font-semibold text-muted">
                       Не мора да платиш сега.
                     </p>
                     <button
                       type="button"
                       onClick={() => openSignup(session)}
-                      className="w-full bg-[#008081] hover:bg-[#006566] text-white font-bold py-3 px-6 rounded-lg transition-colors shadow-md text-lg text-center"
+                      className="w-full rounded-xl bg-yellow px-6 py-4 text-center text-[17px] font-black tracking-wide text-ink shadow-[0_5px_0_#c99f00] transition hover:translate-y-0.5 hover:shadow-[0_3px_0_#c99f00]"
                     >
                       Пријави се
                     </button>
@@ -897,13 +897,13 @@ export function PripremiClient() {
       </div>
 
       {/* Calendar section */}
-      <div className="bg-[#F2F0E7]/30 py-12 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-7xl mx-auto">
+      <div className="u-wrap pb-20">
+        <div>
           <div className="mb-8">
-            <h2 className="text-3xl md:text-4xl font-bold text-[#1E424A] mb-3">
+            <h2 className="mb-3 text-[clamp(1.7rem,3.8vw,2.5rem)] font-extrabold tracking-[-.025em] text-ink">
               Календар
             </h2>
-            <p className="text-lg text-[#1E424A]/70">
+            <p className="text-[17px] text-body sm:text-[18px]">
               Прелистај ги сите идни припремни сесии по датум.
             </p>
           </div>
@@ -915,7 +915,7 @@ export function PripremiClient() {
               {/* Calendars */}
               <div className="space-y-8">
                 {availableMonths.length === 0 && (
-                  <div className="bg-white border-2 border-[#1E424A]/10 rounded-2xl p-6 shadow-lg text-center text-[#1E424A]/70">
+                  <div className="rounded-3xl border-2 border-line bg-white p-6 shadow-[0_24px_50px_-40px_rgba(30,66,74,.6)] text-center text-[17px] font-semibold text-body">
                     Нема закажано припреми за овој период.
                   </div>
                 )}
@@ -931,9 +931,9 @@ export function PripremiClient() {
                   const calendarWeeks = buildCalendarWeeks(monthData.month, monthData.year);
                   
                   return (
-                    <div key={monthData.key} className="bg-white border-2 border-[#1E424A]/10 rounded-2xl p-6 shadow-lg">
+                    <div key={monthData.key} className="rounded-3xl border-2 border-line bg-white p-6 shadow-[0_24px_50px_-40px_rgba(30,66,74,.6)]">
                       <div className="mb-6">
-                        <h3 className="text-2xl font-bold text-[#1E424A]">
+                        <h3 className="text-[24px] font-extrabold leading-snug text-ink">
                           {monthData.label}
                         </h3>
                       </div>
@@ -945,7 +945,7 @@ export function PripremiClient() {
                             (d) => (
                               <div
                                 key={d}
-                                className="text-center text-xs font-semibold text-[#1E424A]/60 py-2"
+                                className="py-2 text-center text-[13px] font-extrabold text-muted"
                               >
                                 {d}
                               </div>
@@ -979,15 +979,15 @@ export function PripremiClient() {
                                   <div
                                     key={di}
                                     className={cn(
-                                      "relative rounded-lg border",
+                                      "relative rounded-xl border",
                                       !day
                                         ? "bg-transparent border-transparent"
-                                        : "bg-white border-[#1E424A]/10",
+                                        : "border-line bg-white",
                                     )}
                                     style={{ minHeight: weekHeight }}
                                   >
                                     {day && (
-                                      <div className="absolute top-1.5 left-2 text-sm font-medium text-[#1E424A] z-10">
+                                      <div className="absolute left-2 top-1.5 z-10 text-[13px] font-bold text-ink">
                                         {day}
                                       </div>
                                     )}
@@ -1047,20 +1047,20 @@ export function PripremiClient() {
               </div>
 
               {/* Event detail panel */}
-              <div className="bg-white border-2 border-[#1E424A]/10 rounded-2xl p-6 shadow-lg sticky top-28 h-fit">
-                <h3 className="text-xl font-bold text-[#1E424A] mb-5">
+              <div className="rounded-3xl border-2 border-line bg-white p-6 shadow-[0_24px_50px_-40px_rgba(30,66,74,.6)] sticky top-28 h-fit">
+                <h3 className="mb-5 text-[22px] font-extrabold text-ink">
                   Детали за припремата
                 </h3>
                 {selectedEvent ? (
                   <div className="space-y-4">
                     <div className="flex flex-wrap gap-2">
-                      <span className="inline-block px-3 py-1 bg-[#FACC0B]/20 text-[#1E424A] text-xs font-bold rounded">
+                      <span className="inline-block rounded-full border border-yellow/60 bg-yellow-lt px-3 py-1 text-[13px] font-extrabold text-ink">
                         {selectedEvent.faculty}
                       </span>
                       {selectedEventNotice && (
                         <span
                           className={cn(
-                            "inline-block rounded border px-3 py-1 text-xs font-bold",
+                            "inline-block rounded-full border px-3 py-1 text-[13px] font-bold",
                             selectedEventNotice.badgeClass,
                           )}
                         >
@@ -1068,13 +1068,13 @@ export function PripremiClient() {
                         </span>
                       )}
                     </div>
-                    <h4 className="text-2xl font-bold text-[#1E424A]">
+                    <h4 className="text-[24px] font-extrabold leading-snug text-ink">
                       {selectedEvent.title} - {selectedEvent.price} МКД
                     </h4>
-                    <p className="text-sm text-[#1E424A]/70 leading-relaxed">
+                    <p className="text-[17px] leading-relaxed text-body">
                       {selectedEvent.description}
                     </p>
-                    <div className="space-y-3 py-4 border-t border-b border-[#1E424A]/10">
+                    <div className="space-y-4 border-y border-line py-4">
                       {[
                         {
                           Icon: CalendarIcon,
@@ -1100,24 +1100,24 @@ export function PripremiClient() {
                         .map(({ Icon, label, value }) => (
                           <div key={label} className="flex items-start gap-3">
                             <Icon
-                              className="w-5 h-5 text-[#008081] flex-shrink-0 mt-0.5"
+                              className="mt-0.5 h-5 w-5 shrink-0 text-teal"
                               aria-hidden="true"
                             />
                             <div>
-                              <p className="text-xs font-medium text-[#1E424A]/60 mb-0.5">
+                              <p className="mb-0.5 text-[13px] font-bold text-muted">
                                 {label === "Инструктор" && typeof value === "string" && value.includes(",") ? "Инструктори" : label}
                               </p>
                               {typeof value === "string" &&
                               (label === "Термини" ||
                                 (label === "Инструктор" &&
                                   value.includes(","))) ? (
-                                <ul className="list-disc pl-4 text-sm font-semibold text-[#1E424A] space-y-0.5 mt-1">
+                                <ul className="mt-1 list-disc space-y-0.5 pl-4 text-[17px] font-bold text-ink">
                                   {value.split(",").map((v) => (
                                     <li key={v.trim()}>{v.trim()}</li>
                                   ))}
                                 </ul>
                               ) : (
-                                <p className="text-sm font-semibold text-[#1E424A]">
+                                <p className="text-[17px] font-bold text-ink">
                                   {value}
                                 </p>
                               )}
@@ -1126,7 +1126,7 @@ export function PripremiClient() {
                         ))}
                     </div>
                     <div>
-                      <p className="mb-2 text-center text-xs font-medium text-[#1E424A]/60">
+                      <p className="mb-3 text-center text-[14px] font-semibold text-muted">
                         Не мора да платиш сега.
                       </p>
                       <button
@@ -1134,14 +1134,14 @@ export function PripremiClient() {
                         onClick={() => openSignup(selectedEvent)}
                         data-analytics-subject={selectedEvent.title}
                         data-analytics-cta="booking"
-                        className="w-full bg-[#008081] hover:bg-[#006566] text-white font-bold py-3 px-6 rounded-lg transition-colors shadow-md text-lg text-center"
+                        className="w-full rounded-xl bg-yellow px-6 py-4 text-center text-[17px] font-black tracking-wide text-ink shadow-[0_5px_0_#c99f00] transition hover:translate-y-0.5 hover:shadow-[0_3px_0_#c99f00]"
                       >
                         Пријави се
                       </button>
                     </div>
                   </div>
                 ) : (
-                  <p className="text-sm text-[#1E424A]/60">
+                  <p className="text-[16px] text-muted">
                     Избери датум од календарот за да ги видиш деталите.
                   </p>
                 )}
@@ -1153,20 +1153,20 @@ export function PripremiClient() {
 
       {signupSession && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-[#1E424A]/60 px-4 py-6"
+          className="fixed inset-0 z-[60] flex items-center justify-center bg-ink/60 px-4 py-6"
           role="dialog"
           aria-modal="true"
           aria-labelledby="signup-title"
         >
-          <div className="w-full max-w-xl max-h-full overflow-y-auto rounded-2xl bg-white p-6 shadow-2xl">
+          <div className="max-h-full w-full max-w-xl overflow-y-auto rounded-3xl border border-line bg-white p-6 shadow-[0_40px_90px_-30px_rgba(30,66,74,.6)] sm:p-8">
             <div className="mb-5 flex items-start justify-between gap-4">
               <div>
-                <p className="mb-1 text-sm font-bold text-[#008081]">
+                <p className="mb-1 text-[14px] font-black uppercase tracking-[.14em] text-teal">
                   {signupSession.faculty}
                 </p>
                 <h2
                   id="signup-title"
-                  className="text-2xl font-bold text-[#1E424A]"
+                  className="text-[24px] font-extrabold leading-snug text-ink"
                 >
                   {signupSession.title}
                 </h2>
@@ -1174,7 +1174,7 @@ export function PripremiClient() {
               <button
                 type="button"
                 onClick={closeSignup}
-                className="rounded-lg border border-[#1E424A]/20 px-3 py-2 text-sm font-bold text-[#1E424A] hover:bg-[#F2F0E7]"
+                className="rounded-full border-2 border-line px-4 py-2 text-[14px] font-extrabold text-ink transition hover:border-teal hover:bg-paper-2"
               >
                 Затвори
               </button>
@@ -1185,7 +1185,7 @@ export function PripremiClient() {
                 <div>
                   <label
                     htmlFor="signup-ime"
-                    className="mb-1.5 block text-sm font-medium text-[#1E424A]"
+                    className="mb-1.5 block text-[15px] font-bold text-ink"
                   >
                     Име *
                   </label>
@@ -1196,13 +1196,13 @@ export function PripremiClient() {
                     onChange={(event) =>
                       updateSignupField("ime", event.target.value)
                     }
-                    className="w-full rounded-lg border border-[#1E424A]/20 px-4 py-3 text-sm text-[#1E424A] focus:border-[#008081] focus:outline-none focus:ring-2 focus:ring-[#008081]/20"
+                    className="w-full rounded-2xl border-2 border-line bg-white px-4 py-3 text-[16px] text-ink outline-none transition focus:border-teal focus:ring-4 focus:ring-teal/20"
                   />
                 </div>
                 <div>
                   <label
                     htmlFor="signup-prezime"
-                    className="mb-1.5 block text-sm font-medium text-[#1E424A]"
+                    className="mb-1.5 block text-[15px] font-bold text-ink"
                   >
                     Презиме *
                   </label>
@@ -1213,14 +1213,14 @@ export function PripremiClient() {
                     onChange={(event) =>
                       updateSignupField("prezime", event.target.value)
                     }
-                    className="w-full rounded-lg border border-[#1E424A]/20 px-4 py-3 text-sm text-[#1E424A] focus:border-[#008081] focus:outline-none focus:ring-2 focus:ring-[#008081]/20"
+                    className="w-full rounded-2xl border-2 border-line bg-white px-4 py-3 text-[16px] text-ink outline-none transition focus:border-teal focus:ring-4 focus:ring-teal/20"
                   />
                 </div>
               </div>
               <div>
                 <label
                   htmlFor="signup-email"
-                  className="mb-1.5 block text-sm font-medium text-[#1E424A]"
+                  className="mb-1.5 block text-[15px] font-bold text-ink"
                 >
                   Email *
                 </label>
@@ -1232,16 +1232,16 @@ export function PripremiClient() {
                   onChange={(event) =>
                     updateSignupField("email", event.target.value)
                   }
-                  className="w-full rounded-lg border border-[#1E424A]/20 px-4 py-3 text-sm text-[#1E424A] focus:border-[#008081] focus:outline-none focus:ring-2 focus:ring-[#008081]/20"
+                  className="w-full rounded-2xl border-2 border-line bg-white px-4 py-3 text-[16px] text-ink outline-none transition focus:border-teal focus:ring-4 focus:ring-teal/20"
                 />
-                <p className="mt-2 text-xs text-[#1E424A]/60">
+                <p className="mt-2 text-[14px] text-muted">
                   Ќе добиете email со информации за уплата или следни чекори.
                 </p>
               </div>
               <div>
                 <label
                   htmlFor="signup-telefon"
-                  className="mb-1.5 block text-sm font-medium text-[#1E424A]"
+                  className="mb-1.5 block text-[15px] font-bold text-ink"
                 >
                   Телефон *
                 </label>
@@ -1252,19 +1252,19 @@ export function PripremiClient() {
                   onChange={(event) =>
                     updateSignupField("telefon", event.target.value)
                   }
-                  className="w-full rounded-lg border border-[#1E424A]/20 px-4 py-3 text-sm text-[#1E424A] focus:border-[#008081] focus:outline-none focus:ring-2 focus:ring-[#008081]/20"
+                  className="w-full rounded-2xl border-2 border-line bg-white px-4 py-3 text-[16px] text-ink outline-none transition focus:border-teal focus:ring-4 focus:ring-teal/20"
                 />
-                <p className="mt-2 text-xs text-[#1E424A]/60">
+                <p className="mt-2 text-[14px] text-muted">
                   Ќе бидете додадени во Viber група по уплатата.
                 </p>
               </div>
               <div>
                 <label
-                  className="mb-1.5 block text-sm font-medium text-[#1E424A]"
+                  className="mb-1.5 block text-[15px] font-bold text-ink"
                 >
                   Начин на присуство *
                 </label>
-                <div className="grid grid-cols-2 overflow-hidden rounded-lg border border-[#1E424A]/20 bg-white p-1">
+                <div className="grid grid-cols-2 overflow-hidden rounded-2xl border-2 border-line bg-white p-1">
                   {[
                     { value: "physical", label: "Физичко присуство" },
                     { value: "online", label: "Онлајн" },
@@ -1280,10 +1280,10 @@ export function PripremiClient() {
                         }))
                       }
                       className={cn(
-                        "min-h-11 rounded-md px-3 text-sm font-bold transition-colors",
+                        "min-h-11 rounded-xl px-3 text-[15px] font-extrabold transition",
                         signupForm.attendancePreference === option.value
-                          ? "bg-[#008081] text-white shadow-sm"
-                          : "bg-transparent text-[#1E424A]/65 hover:bg-[#F2F0E7]",
+                          ? "bg-teal text-white shadow-[0_3px_0_var(--color-teal-dk)]"
+                          : "bg-transparent text-body hover:bg-paper-2",
                       )}
                     >
                       {option.label}
@@ -1294,7 +1294,7 @@ export function PripremiClient() {
               <div>
                 <label
                   htmlFor="signup-discord"
-                  className="mb-1.5 block text-sm font-medium text-[#1E424A]"
+                  className="mb-1.5 block text-[15px] font-bold text-ink"
                 >
                   Discord username *
                 </label>
@@ -1304,13 +1304,13 @@ export function PripremiClient() {
                   onChange={(event) =>
                     updateSignupField("discordUsername", event.target.value)
                   }
-                  className="w-full rounded-lg border border-[#1E424A]/20 px-4 py-3 text-sm text-[#1E424A] focus:border-[#008081] focus:outline-none focus:ring-2 focus:ring-[#008081]/20"
+                  className="w-full rounded-2xl border-2 border-line bg-white px-4 py-3 text-[16px] text-ink outline-none transition focus:border-teal focus:ring-4 focus:ring-teal/20"
                 />
               </div>
               <div>
                 <span
                   id="signup-referral-source-label"
-                  className="mb-1.5 block text-sm font-medium text-[#1E424A]"
+                  className="mb-1.5 block text-[15px] font-bold text-ink"
                 >
                   Како слушна за нас? *
                 </span>
@@ -1335,10 +1335,10 @@ export function PripremiClient() {
                       }
                       aria-pressed={signupForm.referralSource === option.value}
                       className={cn(
-                        "min-h-11 rounded-lg border px-4 text-sm font-bold transition-colors",
+                        "min-h-11 rounded-full border-2 px-4 text-[15px] font-extrabold transition",
                         signupForm.referralSource === option.value
-                          ? "border-[#008081] bg-[#008081] text-white shadow-sm"
-                          : "border-[#1E424A]/20 bg-white text-[#1E424A]/70 hover:bg-[#F2F0E7]",
+                          ? "border-teal bg-teal text-white"
+                          : "border-line bg-white text-body hover:border-teal",
                       )}
                     >
                       {option.label}
@@ -1354,14 +1354,14 @@ export function PripremiClient() {
                     onChange={(event) =>
                       updateSignupField("referralSourceOther", event.target.value)
                     }
-                    className="mt-2 w-full rounded-lg border border-[#1E424A]/20 px-4 py-3 text-sm text-[#1E424A] focus:border-[#008081] focus:outline-none focus:ring-2 focus:ring-[#008081]/20"
+                    className="mt-2 w-full rounded-2xl border-2 border-line bg-white px-4 py-3 text-[16px] text-ink outline-none transition focus:border-teal focus:ring-4 focus:ring-teal/20"
                   />
                 )}
               </div>
               <div>
                 <label
                   htmlFor="signup-referred-by"
-                  className="mb-1.5 block text-sm font-medium text-[#1E424A]"
+                  className="mb-1.5 block text-[15px] font-bold text-ink"
                 >
                   Кој те препорача?
                 </label>
@@ -1372,9 +1372,9 @@ export function PripremiClient() {
                   onChange={(event) =>
                     updateSignupField("referredBy", event.target.value)
                   }
-                  className="w-full rounded-lg border border-[#1E424A]/20 px-4 py-3 text-sm text-[#1E424A] focus:border-[#008081] focus:outline-none focus:ring-2 focus:ring-[#008081]/20"
+                  className="w-full rounded-2xl border-2 border-line bg-white px-4 py-3 text-[16px] text-ink outline-none transition focus:border-teal focus:ring-4 focus:ring-teal/20"
                 />
-                <p className="mt-2 text-xs text-[#1E424A]/60">
+                <p className="mt-2 text-[14px] text-muted">
                   Ако те препорачал пријател, напиши го неговото име и презиме -
                   двајцата добивате 10% попуст.
                 </p>
@@ -1382,7 +1382,7 @@ export function PripremiClient() {
               <div>
                 <label
                   htmlFor="signup-poraka"
-                  className="mb-1.5 block text-sm font-medium text-[#1E424A]"
+                  className="mb-1.5 block text-[15px] font-bold text-ink"
                 >
                   Белешка
                 </label>
@@ -1393,17 +1393,17 @@ export function PripremiClient() {
                   onChange={(event) =>
                     updateSignupField("poraka", event.target.value)
                   }
-                  className="w-full resize-none rounded-lg border border-[#1E424A]/20 px-4 py-3 text-sm text-[#1E424A] focus:border-[#008081] focus:outline-none focus:ring-2 focus:ring-[#008081]/20"
+                  className="w-full rounded-2xl border-2 border-line bg-white px-4 py-3 text-[16px] text-ink outline-none transition focus:border-teal focus:ring-4 focus:ring-teal/20 resize-none"
                 />
               </div>
 
               {signupSession.price != null && (
-                <div className="rounded-lg border-2 border-[#FACC0B]/60 bg-[#F2F0E7] px-4 py-3 text-sm text-[#1E424A]">
+                <div className="rounded-2xl border-2 border-yellow bg-yellow-lt px-4 py-3 text-[16px] text-ink">
                   <p className="font-bold">
                     Цената на припремата е {signupSession.price} денари.
                   </p>
                   {paymentDeadline && (
-                    <p className="mt-1 text-[#1E424A]/75">
+                    <p className="mt-1 text-body">
                       Уплатата треба да се изврши до {paymentDeadline}.
                     </p>
                   )}
@@ -1413,10 +1413,10 @@ export function PripremiClient() {
               {signupStatus && (
                 <div
                   className={cn(
-                    "rounded-lg px-4 py-3 text-sm",
+                    "rounded-2xl border-2 px-4 py-3 text-[16px] font-semibold text-ink",
                     signupStatus.type === "success"
-                      ? "bg-[#008081]/10 text-[#1E424A]"
-                      : "bg-[#FACC0B]/15 text-[#1E424A]",
+                      ? "border-teal/30 bg-teal-lt"
+                      : "border-yellow bg-yellow-lt",
                   )}
                 >
                   {signupStatus.message}
@@ -1426,7 +1426,7 @@ export function PripremiClient() {
               <button
                 type="submit"
                 disabled={isSignupSubmitting}
-                className="w-full rounded-lg bg-[#008081] px-6 py-3.5 text-sm font-bold text-white shadow-md transition-colors hover:bg-[#006566] disabled:opacity-70"
+                className="w-full rounded-xl bg-teal px-6 py-4 text-[16px] font-black tracking-wide text-white shadow-[0_4px_0_var(--color-teal-dk)] outline-none transition hover:translate-y-0.5 hover:shadow-[0_2px_0_var(--color-teal-dk)] focus-visible:ring-4 focus-visible:ring-teal/30 disabled:opacity-70"
               >
                 {isSignupSubmitting ? "Се зачувува..." : "Испрати пријава"}
               </button>
@@ -1436,19 +1436,19 @@ export function PripremiClient() {
       )}
 
       {globalNotification && (
-        <div className="fixed top-4 right-4 z-[100] bg-white border-l-4 border-[#008081] p-4 rounded-lg shadow-2xl max-w-md animate-in slide-in-from-top-2 fade-in">
+        <div className="step-in fixed right-3 top-3 z-[100] max-w-md rounded-2xl border border-l-4 border-line border-l-teal bg-white p-4 shadow-[0_24px_60px_-20px_rgba(30,66,74,.55)] sm:right-4 sm:top-4">
           <div className="flex items-center gap-3">
-            <div className="flex-shrink-0 bg-[#008081]/10 rounded-full p-2">
-              <svg className="w-5 h-5 text-[#008081]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <div className="shrink-0 rounded-full bg-teal-lt p-2">
+              <svg className="h-5 w-5 text-teal-dk" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
               </svg>
             </div>
-            <p className="text-sm font-medium text-[#1E424A]">
+            <p className="text-[16px] font-bold text-ink">
               {globalNotification}
             </p>
             <button
               onClick={() => setGlobalNotification(null)}
-              className="ml-auto text-[#1E424A]/40 hover:text-[#1E424A]"
+              className="ml-auto text-muted hover:text-ink"
             >
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />

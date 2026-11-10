@@ -1,11 +1,12 @@
-import Link from "next/link";
-import { Check } from "lucide-react";
+import Button from "@/components/ui/Button";
+import Arrow from "@/components/ui/Arrow";
+import Card from "@/components/ui/Card";
+import Reveal from "@/components/ui/Reveal";
 
 type HeroCard = {
   title: string;
   href: string | null;
   cta: string;
-  badge?: string;
   disabled?: boolean;
   points: string[];
 };
@@ -47,105 +48,107 @@ const heroCards: HeroCard[] = [
 
 const faculties = ["ФИНКИ", "ФЕИТ", "МФС", "Економски"];
 
+function CheckTile() {
+  return (
+    <span
+      aria-hidden
+      className="mt-0.5 grid h-6 w-6 shrink-0 place-items-center rounded-full bg-teal-lt text-teal-dk"
+    >
+      <svg viewBox="0 0 24 24" className="h-3.5 w-3.5" fill="none">
+        <path
+          d="m5 12.5 4.5 4.5L19 7.5"
+          stroke="currentColor"
+          strokeWidth="3"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+      </svg>
+    </span>
+  );
+}
+
 export function Hero() {
   return (
-    <section className="min-h-screen bg-white flex items-center py-16 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
-      {/* Background image */}
-      <div
-        className="absolute inset-0 bg-cover opacity-70"
-        style={{
-          backgroundImage: "url(/hero-bg.png)",
-          backgroundPosition: "left center",
-        }}
-        aria-hidden="true"
-      />
-      <div className="absolute inset-0 bg-white/40" aria-hidden="true" />
-
-      <div className="max-w-7xl mx-auto w-full relative z-10">
-        <div className="grid grid-cols-1 lg:grid-cols-[55%_45%] gap-12 lg:gap-16 items-center">
-          {/* Left column */}
-          <div className="space-y-8">
-            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-[#1E424A] leading-tight text-balance">
-              Спреми се за испит со Кодрум!
-            </h1>
-            <p className="text-lg sm:text-xl text-[#1E424A]/70 leading-relaxed max-w-2xl">
-              Сега е вистинско време да завршите со испитите и да уживате во
-              летото без стрес! 😎🌴
+    <section className="u-wrap relative pb-14 pt-6 sm:pb-20 sm:pt-12">
+      <div className="grid grid-cols-1 items-center gap-10 lg:grid-cols-[55%_45%] lg:gap-14">
+        {/* Left column */}
+        <Reveal className="text-center">
+          <p className="text-[13px] font-black uppercase tracking-[.2em] text-teal">
+            Испитна подготовка
+          </p>
+          <h1 className="mt-3 text-balance text-[clamp(2.3rem,6vw,4.2rem)] font-extrabold leading-[1.06] tracking-[-.03em] text-ink">
+            Спреми се за испит со Кодрум!
+          </h1>
+          <p className="mx-auto mt-5 max-w-xl text-[18px] leading-relaxed text-body sm:text-[19px]">
+            Сега е вистинско време да се подготвите за испитите и да ги положите
+            без стрес!
+          </p>
+          <div className="mt-8">
+            <p className="mb-3 text-[15px] font-bold text-muted">
+              За студенти од:
             </p>
-            <div>
-              <p className="text-sm font-medium text-[#1E424A]/60 mb-3">
-                За студенти од:
-              </p>
-              <div className="flex flex-wrap gap-3">
-                {faculties.map((f) => (
-                  <div
-                    key={f}
-                    className="px-4 py-2 bg-white border-2 border-[#008081]/20 text-[#1E424A] font-medium rounded-lg text-sm"
-                  >
-                    {f}
-                  </div>
-                ))}
-              </div>
-            </div>
+            <ul className="flex flex-wrap justify-center gap-2.5">
+              {faculties.map((f) => (
+                <li
+                  key={f}
+                  className="rounded-full border-2 border-line bg-white px-4 py-2 text-[15px] font-extrabold text-ink shadow-[0_6px_16px_-12px_rgba(30,66,74,.5)]"
+                >
+                  {f}
+                </li>
+              ))}
+            </ul>
           </div>
+        </Reveal>
 
-          {/* Right column — product cards */}
-          <div className="space-y-6">
-            {heroCards.map((card) => (
-              <div
-                key={card.title}
-                className="bg-white border-2 border-[#1E424A]/10 rounded-2xl p-8 shadow-lg hover:shadow-xl transition-shadow"
-              >
-                <div className="flex items-center justify-between gap-2 mb-4">
-                  <h2 className="text-2xl font-bold text-[#1E424A]">
-                    {card.title}
-                  </h2>
-                  {"badge" in card && card.badge && (
-                    <span className="rounded-full bg-[#008081]/10 px-2.5 py-0.5 text-xs font-bold text-[#008081]">
-                      {card.badge}
-                    </span>
-                  )}
-                </div>
-                <ul className="space-y-3 mb-6">
+        {/* Right column: product cards */}
+        <div className="space-y-5">
+          {heroCards.map((card, i) => (
+            <Reveal key={card.title} delay={120 + i * 120}>
+              <Card className="p-6 sm:p-8">
+                <h2 className="mb-5 text-[24px] font-extrabold leading-tight tracking-[-.01em] text-ink">
+                  {card.title}
+                </h2>
+                <ul className="mb-6 space-y-3">
                   {card.points.map((pt) => (
                     <li
                       key={pt}
-                      className="flex items-start gap-3 text-sm text-[#1E424A]/80"
+                      className="flex items-start gap-3 text-[17px] leading-relaxed text-body"
                     >
-                      <Check
-                        className="w-5 h-5 text-[#008081] mt-0.5 flex-shrink-0"
-                        aria-hidden="true"
-                      />
+                      <CheckTile />
                       <span>{pt}</span>
                     </li>
                   ))}
                 </ul>
                 {card.disabled || !card.href ? (
-                  <div className="relative">
-                    <span className="absolute -top-2 -right-2 z-10 rotate-12 rounded bg-[#FACC0B] px-2 py-1 text-[11px] leading-none font-bold text-[#1E424A] shadow-md">
-                      Наскоро
-                    </span>
-                    <button
-                      type="button"
+                  <div className="flex flex-wrap items-center gap-3">
+                    <Button
+                      variant="teal"
+                      size="lg"
                       disabled
                       data-analytics-subject={card.title}
-                      className="w-full bg-[#008081]/40 text-white font-medium py-3.5 px-6 rounded-lg shadow-md block text-center text-sm cursor-not-allowed"
+                      className="w-full sm:w-auto"
                     >
                       {card.cta}
-                    </button>
+                    </Button>
+                    <span className="rounded-full bg-yellow px-3 py-1 text-[12px] font-black uppercase tracking-wide text-ink">
+                      Наскоро
+                    </span>
                   </div>
                 ) : (
-                  <Link
+                  <Button
                     href={card.href}
+                    variant="yellow"
+                    size="lg"
                     data-analytics-subject={card.title}
-                    className="w-full bg-[#008081] hover:bg-[#006566] text-white font-medium py-3.5 px-6 rounded-lg transition-colors shadow-md block text-center text-sm"
+                    className="w-full sm:w-auto"
                   >
                     {card.cta}
-                  </Link>
+                    <Arrow className="h-5 w-5" />
+                  </Button>
                 )}
-              </div>
-            ))}
-          </div>
+              </Card>
+            </Reveal>
+          ))}
         </div>
       </div>
     </section>

@@ -1,7 +1,8 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import Arrow from "@/components/ui/Arrow";
+import SectionHeading from "@/components/ui/SectionHeading";
 import type { Testimonial } from "@/types";
 
 const testimonials: Testimonial[] = [
@@ -55,13 +56,11 @@ export function Testimonials() {
 
   const next = useCallback(
     () => setCurrentIndex((p) => (p + 2) % testimonials.length),
-    []
+    [],
   );
 
   const prev = () =>
-    setCurrentIndex(
-      (p) => (p - 2 + testimonials.length) % testimonials.length
-    );
+    setCurrentIndex((p) => (p - 2 + testimonials.length) % testimonials.length);
 
   useEffect(() => {
     const id = setInterval(next, 6000);
@@ -73,53 +72,59 @@ export function Testimonials() {
 
   return (
     <div>
-      <h3 className="text-2xl font-bold text-[#1E424A] mb-6">
-        Што кажуваат студентите
-      </h3>
+      <SectionHeading title="Што кажуваат студентите" />
 
-      <div className="flex flex-col gap-6">
-        {[first, second].map((t) => (
-          <div
-            key={t.id}
-            className="bg-white rounded-xl shadow-md p-6 border-l-4 border-[#008081]"
-          >
-            <p className="text-base text-[#1E424A] leading-relaxed italic mb-4">
-              &ldquo;{t.quote}&rdquo;
-            </p>
-            <p className="font-bold text-[#1E424A] text-sm">{t.name}</p>
-            <p className="text-sm text-[#008081]">{t.subtitle}</p>
-          </div>
-        ))}
+      <div className="mx-auto max-w-5xl">
+        <div className="grid gap-5 md:grid-cols-2">
+          {[first, second].map((t) => (
+            <figure
+              key={t.id}
+              className="step-in flex flex-col rounded-3xl border-2 border-line bg-white p-6 shadow-[0_24px_50px_-40px_rgba(30,66,74,.6)] sm:p-7"
+            >
+              <span
+                aria-hidden
+                className="mb-3 text-[44px] font-black leading-none text-teal/30"
+              >
+                &ldquo;
+              </span>
+              <blockquote className="flex-1 text-[17px] leading-relaxed text-ink">
+                {t.quote}
+              </blockquote>
+              <figcaption className="mt-5 border-t border-line pt-4">
+                <p className="text-[16px] font-extrabold text-ink">{t.name}</p>
+                <p className="text-[15px] font-semibold text-teal-dk">
+                  {t.subtitle}
+                </p>
+              </figcaption>
+            </figure>
+          ))}
+        </div>
 
         {/* Controls */}
-        <div className="flex items-center justify-between pt-2">
+        <div className="mt-6 flex items-center justify-center gap-5">
           <button
             onClick={prev}
-            aria-label="Previous testimonials"
-            className="p-2 rounded-lg bg-white hover:bg-[#008081] hover:text-white border border-[#1E424A]/10 transition-colors shadow-sm"
+            aria-label="Претходни искуства"
+            className="grid h-11 w-11 place-items-center rounded-full border border-line bg-white text-ink transition hover:border-teal hover:bg-teal hover:text-white"
           >
-            <ChevronLeft className="w-5 h-5" />
+            <Arrow dir="left" className="h-5 w-5" />
           </button>
           <div className="flex gap-2">
             {Array.from({ length: pairCount }).map((_, i) => (
               <button
                 key={i}
                 onClick={() => setCurrentIndex(i * 2)}
-                aria-label={`Go to testimonial pair ${i + 1}`}
-                className={`h-2 rounded-full transition-all ${
-                  Math.floor(currentIndex / 2) === i
-                    ? "bg-[#008081] w-6"
-                    : "bg-[#1E424A]/20 hover:bg-[#1E424A]/40 w-2"
-                }`}
+                aria-label={`Оди на искуства ${i + 1}`}
+                className={`h-2.5 rounded-full transition-all ${Math.floor(currentIndex / 2) === i ? "w-7 bg-teal" : "w-2.5 bg-line hover:bg-muted/50"}`}
               />
             ))}
           </div>
           <button
             onClick={next}
-            aria-label="Next testimonials"
-            className="p-2 rounded-lg bg-white hover:bg-[#008081] hover:text-white border border-[#1E424A]/10 transition-colors shadow-sm"
+            aria-label="Следни искуства"
+            className="grid h-11 w-11 place-items-center rounded-full border border-line bg-white text-ink transition hover:border-teal hover:bg-teal hover:text-white"
           >
-            <ChevronRight className="w-5 h-5" />
+            <Arrow className="h-5 w-5" />
           </button>
         </div>
       </div>

@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Inter } from "next/font/google";
+import { Manrope } from "next/font/google";
 import { Suspense } from "react";
 import "./globals.css";
 import { Navbar } from "@/components/shared/Navbar";
@@ -7,19 +7,28 @@ import { Footer } from "@/components/shared/Footer";
 import { GoogleAnalytics } from "@/components/shared/GoogleAnalytics";
 import { AnalyticsEvents } from "@/components/shared/AnalyticsEvents";
 import { CookieNotice } from "@/components/shared/CookieNotice";
+import ContactMenu from "@/components/contact/ContactMenu";
+import JsonLd from "@/components/seo/JsonLd";
+import { OG_SIZE } from "@/lib/seo";
+import { SITE_DESCRIPTION, SITE_NAME, SITE_TITLE, SITE_URL } from "@/lib/site";
+import { organizationLd } from "@/lib/structured";
+import Backdrop from "@/components/ui/Backdrop";
 
-const inter = Inter({ subsets: ["latin"] });
+// Manrope has Cyrillic; Inter's latin subset left Macedonian text in the fallback font.
+const manrope = Manrope({
+  subsets: ["latin", "latin-ext", "cyrillic"],
+  variable: "--font-manrope",
+  display: "swap",
+});
 const gaMeasurementId =
   process.env.NEXT_PUBLIC_GA_ID ?? process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID;
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://kodrum.mk"),
-  title: {
-    default: "Кодрум – Приватни часови и испитна подготовка за студенти (ФИНКИ)",
-    template: "%s | Кодрум",
-  },
-  description:
-    "Професионални приватни часови и испитна подготовка за студенти од ФИНКИ, ФЕИТ, МФС и Економски. Индивидуални и групни часови за СП, ООП, АПС, Калкулус и програмирање во Скопје и онлајн.",
+  // every relative URL in metadata (canonical, Open Graph, images) resolves against SITE_URL
+  metadataBase: new URL(SITE_URL),
+  title: { default: SITE_TITLE, template: `%s | ${SITE_NAME}` },
+  description: SITE_DESCRIPTION,
+  applicationName: SITE_NAME,
   keywords: [
     "приватни часови финки",
     "privatni casovi finki",
@@ -44,23 +53,27 @@ export const metadata: Metadata = {
     "алгоритми и структури на податоци",
     "приватни часови скопје",
   ],
-  alternates: {
-    canonical: "/",
+  icons: {
+    icon: [
+      { url: "/favicon.ico" },
+      { url: "/favicon-round.png", type: "image/png" },
+    ],
+    apple: "/apple-touch-icon.png",
   },
+  // each page sets its own canonical, title and Open Graph through pageMeta(); these are the fallbacks
   openGraph: {
-    title: "Кодрум – Приватни часови и испитна подготовка за студенти",
-    description:
-      "Приватни часови и испитна подготовка за студенти од ФИНКИ, ФЕИТ, МФС и Економски во Скопје и онлајн.",
-    url: "https://kodrum.mk",
-    siteName: "Кодрум",
-    locale: "mk_MK",
     type: "website",
+    siteName: SITE_NAME,
+    locale: "mk_MK",
+    title: SITE_TITLE,
+    description: SITE_DESCRIPTION,
+    images: [{ url: "/opengraph-image", ...OG_SIZE, alt: SITE_TITLE }],
   },
   twitter: {
     card: "summary_large_image",
-    title: "Кодрум – Приватни часови и испитна подготовка за студенти",
-    description:
-      "Приватни часови и испитна подготовка за студенти од ФИНКИ, ФЕИТ, МФС и Економски во Скопје и онлајн.",
+    title: SITE_TITLE,
+    description: SITE_DESCRIPTION,
+    images: ["/opengraph-image"],
   },
   robots: {
     index: true,
@@ -75,47 +88,6 @@ export const metadata: Metadata = {
   },
 };
 
-const organizationSchema = {
-  "@context": "https://schema.org",
-  "@graph": [
-    {
-      "@type": "EducationalOrganization",
-      "@id": "https://kodrum.mk/#organization",
-      "name": "Кодрум (Kodrum)",
-      "url": "https://kodrum.mk",
-      "logo": "https://kodrum.mk/logo.png",
-      "description":
-        "Образовна платформа за приватни часови, колоквиумска и испитна подготовка за студенти на ФИНКИ, ФЕИТ, МФС и Економски во Скопје и онлајн.",
-      "telephone": "+38975295582",
-      "email": "kodrum.mk@gmail.com",
-      "address": {
-        "@type": "PostalAddress",
-        "addressLocality": "Skopje",
-        "addressCountry": "MK",
-      },
-      "areaServed": {
-        "@type": "Country",
-        "name": "North Macedonia",
-      },
-      "sameAs": [
-        "https://www.instagram.com/kodrum.mk/",
-        "https://www.facebook.com/61583240054450/",
-        "https://discord.gg/FmMjw3Q564",
-      ],
-    },
-    {
-      "@type": "WebSite",
-      "@id": "https://kodrum.mk/#website",
-      "url": "https://kodrum.mk",
-      "name": "Кодрум",
-      "publisher": {
-        "@id": "https://kodrum.mk/#organization",
-      },
-      "inLanguage": "mk-MK",
-    },
-  ],
-};
-
 export const viewport: Viewport = {
   themeColor: "#008081",
   width: "device-width",
@@ -128,15 +100,20 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="mk">
+    <html lang="mk" className={manrope.variable}>
       <head>
-        <link rel="alternate" type="text/plain" href="/llms.txt" title="LLM Context" />
-        <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationSchema) }}
+        <noscript>
+          <style>{".reveal{opacity:1}"}</style>
+        </noscript>
+        <link
+          rel="alternate"
+          type="text/plain"
+          href="/llms.txt"
+          title="LLM Context"
         />
+        <JsonLd data={organizationLd()} />
       </head>
-      <body className={inter.className}>
+      <body>
         {gaMeasurementId && (
           <Suspense fallback={null}>
             <GoogleAnalytics measurementId={gaMeasurementId} />
@@ -150,8 +127,12 @@ export default function RootLayout({
           Скокни до главната содржина
         </a>
         <Navbar />
-        <main id="main-content">{children}</main>
+        <main id="main-content" className="relative overflow-x-clip">
+          <Backdrop />
+          {children}
+        </main>
         <Footer />
+        <ContactMenu />
         <CookieNotice />
       </body>
     </html>

@@ -1,16 +1,20 @@
 import type { Metadata } from "next";
+import { pageMeta } from "@/lib/seo";
+import JsonLd from "@/components/seo/JsonLd";
+import { breadcrumbLd } from "@/lib/structured";
+import { LegalPage } from "@/components/shared/LegalPage";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMeta({
   title: "Политика за приватност",
   description:
     "Прочитај ја политиката за приватност на Кодрум и дознај како ги обработуваме вашите лични податоци.",
-};
+  path: "/privatnost",
+});
 
 const sections = [
   {
     title: "1. Воведни информации",
-    content:
-      `Оваа Политика за приватност опишува како Кодрум (понатаму: „ние", „нас" или „нашиот") собира, користи и дели информации за вас при користење на нашите услуги. Ве молиме прочитајте ја внимателно.`,
+    content: `Оваа Политика за приватност опишува како Кодрум (понатаму: „ние", „нас" или „нашиот") собира, користи и дели информации за вас при користење на нашите услуги. Ве молиме прочитајте ја внимателно.`,
   },
   {
     title: "2. Кои информации ги собираме",
@@ -51,27 +55,14 @@ const sections = [
 
 export default function PrivatnostPage() {
   return (
-    <div className="min-h-screen bg-white">
-      <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-        <h1 className="text-4xl md:text-5xl font-bold text-[#1E424A] mb-4">
-          Политика за приватност
-        </h1>
-        {/* Update this date when the policy content changes */}
-        <p className="text-sm text-[#1E424A]/50 mb-10">
-          Последно ажурирање: Јануари 2025
-        </p>
-
-        <div className="space-y-8">
-          {sections.map((s) => (
-            <section key={s.title}>
-              <h2 className="text-xl font-bold text-[#1E424A] mb-3">
-                {s.title}
-              </h2>
-              <p className="text-[#1E424A]/70 leading-relaxed">{s.content}</p>
-            </section>
-          ))}
-        </div>
-      </div>
-    </div>
+    <>
+      <JsonLd data={breadcrumbLd("Политика за приватност", "/privatnost")} />
+      <LegalPage
+        title="Политика за приватност"
+        // Update this date when the policy content changes
+        updated="Последно ажурирање: Јануари 2025"
+        sections={sections}
+      />
+    </>
   );
 }

@@ -12,7 +12,11 @@ function formatMkd(price: number) {
   return `${price.toLocaleString("mk-MK")} МКД`;
 }
 
-export function PrepPrice({ price, compact = false, className }: PrepPriceProps) {
+export function PrepPrice({
+  price,
+  compact = false,
+  className,
+}: PrepPriceProps) {
   if (price == null) return null;
 
   const originalPrice = price + DISCOUNT_AMOUNT;
@@ -20,7 +24,7 @@ export function PrepPrice({ price, compact = false, className }: PrepPriceProps)
   return (
     <div
       className={cn(
-        "rounded-lg border-2 border-[#FACC0B] bg-white shadow-sm",
+        "rounded-2xl border-2 border-yellow bg-yellow-lt",
         compact ? "px-3 py-2" : "px-4 py-3",
         className,
       )}
@@ -28,16 +32,16 @@ export function PrepPrice({ price, compact = false, className }: PrepPriceProps)
       <div
         className={cn(
           "flex items-baseline justify-center gap-3",
-          compact ? "text-xs" : "text-base",
+          compact ? "text-sm" : "text-[17px]",
         )}
       >
-        <span className="font-semibold text-[#1E424A]/45 line-through">
+        <span className="font-bold text-muted line-through">
           {formatMkd(originalPrice)}
         </span>
         <span
           className={cn(
-            "font-extrabold text-[#FACC0B]",
-            compact ? "text-lg" : "text-2xl",
+            "font-black text-ink",
+            compact ? "text-xl" : "text-[28px]",
           )}
         >
           {formatMkd(price)}

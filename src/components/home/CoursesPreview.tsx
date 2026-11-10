@@ -1,7 +1,8 @@
 "use client";
 
-import { ChevronRight } from "lucide-react";
-import { motion } from "framer-motion";
+import { motion, useReducedMotion } from "framer-motion";
+import Button from "@/components/ui/Button";
+import SectionHeading from "@/components/ui/SectionHeading";
 
 interface FacultyCard {
   id: string;
@@ -56,76 +57,104 @@ const facultyData: FacultyCard[] = [
   },
 ];
 
+const ACCENTS = ["bg-teal", "bg-yellow", "bg-ink", "bg-teal-dk"];
 const duplicated = [...facultyData, ...facultyData, ...facultyData];
 
-export function CoursesPreview() {
+function FacultyCardView({
+  faculty,
+  accent,
+}: {
+  faculty: FacultyCard;
+  accent: string;
+}) {
   return (
-    <section className="min-h-screen bg-white py-16 px-4 sm:px-6 lg:px-8 flex flex-col justify-center overflow-hidden">
-      <div className="max-w-7xl mx-auto w-full mb-12">
-        <div className="text-center mb-12">
-          <span className="inline-flex mb-3 rounded-lg bg-[#FACC0B]/20 px-4 py-1.5 text-sm font-semibold text-[#FACC0B]">
-            Наскоро
-          </span>
-          <h2 className="text-4xl md:text-5xl font-bold text-[#1E424A] mb-4">
-            Курсеви
-          </h2>
-          <p className="text-lg text-[#1E424A]/70 max-w-2xl mx-auto mb-8">
-            Истражувајте ги нашите курсеви по факултет и погледнете кои предмети
-            се моментално достапни за подготовка.
-          </p>
-          <button
-            type="button"
-            className="bg-[#008081] text-white font-medium py-3 px-8 rounded-lg shadow-md inline-flex items-center gap-2 text-sm cursor-default"
+    <div className="relative h-full overflow-hidden rounded-3xl border-2 border-line bg-white p-7 shadow-[0_24px_50px_-40px_rgba(30,66,74,.6)]">
+      <span
+        aria-hidden
+        className={`absolute inset-x-0 top-0 h-1.5 ${accent}`}
+      />
+      <h3 className="text-[28px] font-extrabold tracking-[-.02em] text-ink">
+        {faculty.name}
+      </h3>
+      <ul className="mt-5 space-y-3">
+        {faculty.courses.map((course) => (
+          <li
+            key={course}
+            className="flex items-start gap-3 text-[17px] leading-snug text-body"
           >
+            <span
+              aria-hidden
+              className="mt-[.55em] h-2 w-2 shrink-0 rounded-full bg-teal"
+            />
+            {course}
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
+export function CoursesPreview() {
+  const reduceMotion = useReducedMotion();
+
+  return (
+    <section className="relative overflow-hidden pb-16 pt-4 sm:pb-20">
+      <div className="u-wrap">
+        <SectionHeading
+          kicker="Наскоро"
+          title="Курсеви"
+          intro="Истражувајте ги нашите курсеви по факултет и погледнете кои предмети се моментално достапни за подготовка."
+        />
+        <div className="-mt-2 mb-10 flex justify-center">
+          <Button variant="teal" size="lg" disabled>
             Види ги сите
-            <ChevronRight className="w-5 h-5" aria-hidden="true" />
-          </button>
+          </Button>
         </div>
       </div>
 
-      {/* Scrolling carousel */}
-      <div className="relative w-full overflow-hidden">
-        <motion.div
-          className="flex gap-8"
-          animate={{ x: ["0%", `-${(100 / 3) * facultyData.length}%`] }}
-          transition={{ repeat: Infinity, repeatType: "loop", duration: 60, ease: "linear" }}
-          aria-hidden="true"
-        >
-          {duplicated.map((faculty, index) => (
-            <div
-              key={`${faculty.id}-${index}`}
-              className="flex-shrink-0 w-[350px] md:w-[400px]"
+      {reduceMotion ? (
+        // reduced motion: a plain, swipeable row instead of the endless marquee
+        <ul className="flex snap-x gap-5 overflow-x-auto px-4 pb-4">
+          {facultyData.map((faculty, i) => (
+            <li
+              key={faculty.id}
+              className="w-[300px] shrink-0 snap-start md:w-[360px]"
             >
-              <div className="bg-gradient-to-br from-[#1E424A] to-[#1E424A]/90 rounded-2xl shadow-2xl p-8 h-[420px] flex flex-col relative overflow-hidden">
-                <div className="absolute top-0 right-0 w-32 h-32 bg-[#008081]/20 rounded-full blur-3xl" />
-                <div className="absolute bottom-0 left-0 w-40 h-40 bg-[#FACC0B]/10 rounded-full blur-3xl" />
-                <div className="relative z-10 flex flex-col h-full">
-                  <div className="mb-6">
-                    <h3 className="text-3xl md:text-4xl font-bold text-white mb-3">
-                      {faculty.name}
-                    </h3>
-                    <div className="w-16 h-1 bg-[#008081] rounded-full" />
-                  </div>
-                  <ul className="space-y-3">
-                    {faculty.courses.map((course) => (
-                      <li
-                        key={course}
-                        className="flex items-start gap-3 text-white/90"
-                      >
-                        <ChevronRight
-                          className="w-5 h-5 text-[#008081] mt-1 flex-shrink-0"
-                          aria-hidden="true"
-                        />
-                        <span className="text-lg leading-relaxed">{course}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              </div>
-            </div>
+              <FacultyCardView
+                faculty={faculty}
+                accent={ACCENTS[i % ACCENTS.length]}
+              />
+            </li>
           ))}
-        </motion.div>
-      </div>
+        </ul>
+      ) : (
+        <div className="relative w-full overflow-hidden">
+          {/* each card carries its own right padding, so one third of the track is exactly one loop */}
+          <motion.div
+            className="flex w-max"
+            animate={{ x: ["0%", "-33.3333%"] }}
+            transition={{
+              repeat: Infinity,
+              repeatType: "loop",
+              duration: 60,
+              ease: "linear",
+            }}
+            aria-hidden="true"
+          >
+            {duplicated.map((faculty, index) => (
+              <div
+                key={`${faculty.id}-${index}`}
+                className="w-[320px] shrink-0 pr-5 md:w-[380px]"
+              >
+                <FacultyCardView
+                  faculty={faculty}
+                  accent={ACCENTS[index % ACCENTS.length]}
+                />
+              </div>
+            ))}
+          </motion.div>
+        </div>
+      )}
     </section>
   );
 }
